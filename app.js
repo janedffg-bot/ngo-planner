@@ -50,6 +50,8 @@ const App = {
     setup() {
         const activeTab = ref('itinerary');
         const selectedDate = ref(tripDates[0]);
+        // 新增：Modal 狀態
+        const isModalOpen = ref(false); 
 
         const tripData = ref(initialTripData);
         
@@ -127,6 +129,22 @@ const App = {
             item.acquired = !item.acquired;
         };
 
+        // Modal 控制
+        const openModal = () => {
+            isModalOpen.value = true;
+        };
+
+        const closeModal = () => {
+            isModalOpen.value = false;
+        };
+
+        // 提交新行程 (暫時只是關閉 Modal)
+        const saveItinerary = () => {
+             // 實際的儲存邏輯會在之後實作
+             alert("行程新增功能開發中...");
+             closeModal();
+        }
+
         return {
             activeTab,
             selectedDate,
@@ -138,9 +156,13 @@ const App = {
             expenseList,
             totalExpenseJPY,
             totalExpenseTWD,
+            isModalOpen,
             selectTab,
             selectDate,
             toggleAcquired,
+            openModal,
+            closeModal,
+            saveItinerary,
         };
     },
 
@@ -171,7 +193,7 @@ const App = {
                 </button>
             </div>
         </div>
-        <main class="pt-24 p-4 bg-gray-100 min-h-[calc(100vh-250px)]">
+        <main class="pt-32 p-4 bg-gray-100 min-h-[calc(100vh-250px)]">
 
             <div v-if="activeTab === 'itinerary'" class="flex flex-col space-y-3">
                 
@@ -286,10 +308,54 @@ const App = {
                 </div>
             </div>
 
-            <button class="fixed bottom-6 right-6 w-12 h-12 bg-blue-600 rounded-full text-white shadow-xl flex items-center justify-center text-3xl font-light hover:bg-blue-700 transition-colors duration-200">
+            <button @click="openModal" class="fixed bottom-6 right-6 w-12 h-12 bg-blue-600 rounded-full text-white shadow-xl flex items-center justify-center text-3xl font-light hover:bg-blue-700 transition-colors duration-200 z-20">
                 +
             </button>
         </main>
+
+        <div v-if="isModalOpen" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-30 flex items-center justify-center">
+            <div @click.stop class="bg-white rounded-lg shadow-xl p-6 m-4 w-full max-w-md">
+                <div class="flex justify-between items-center pb-3">
+                    <h3 class="text-xl font-bold text-gray-800">新增行程</h3>
+                    <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                
+                <form @submit.prevent="saveItinerary" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">日期</label>
+                        <input type="date" :value="selectedDate" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">時間</label>
+                        <input type="time" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">事件名稱</label>
+                        <input type="text" placeholder="例如：新穗高纜車" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">類型</label>
+                        <select class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                            <option value="attraction">景點</option>
+                            <option value="meal">餐飲</option>
+                            <option value="transport">交通</option>
+                            <option value="flight">航班</option>
+                        </select>
+                    </div>
+                    
+                    <div class="pt-4 flex justify-end space-x-3">
+                        <button type="button" @click="closeModal" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
+                            取消
+                        </button>
+                        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-md hover:bg-blue-700 transition-colors">
+                            儲存行程
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     `,
 };
 
