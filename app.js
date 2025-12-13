@@ -172,15 +172,15 @@ const App = {
             </div>
         </div>
 
-        <main class="pt-[100px] p-4 bg-gray-100 min-h-[calc(100vh-250px)]">
+        <main class="pt-28 p-4 bg-gray-100 min-h-[calc(100vh-250px)]">
 
             <div v-if="activeTab === 'itinerary'" class="flex flex-col space-y-3">
                 
                 <div class="flex overflow-x-auto space-x-2 mb-4 scrollbar-hide">
                     <div v-for="option in dateOptions" :key="option.date" @click="selectDate(option.date)"
-                         :class="['flex-shrink-0 w-[58px] h-16 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-200',
+                         :class="['flex-shrink-0 w-[50px] h-16 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-200',
                                   selectedDate === option.date ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-gray-50']">
-                        <span class="text-sm">週{{ option.dayOfWeek }}</span>
+                        <span class="text-xs">週{{ option.dayOfWeek }}</span>
                         <span class="text-xl font-bold">{{ option.display }}</span>
                     </div>
                 </div>
