@@ -160,7 +160,7 @@ const App = {
         <div class="min-h-screen bg-gray-100">
             
             <div class="relative h-[250px] w-full">
-                <img src="gassho_winter_banner.jpg" alt="名古屋六日遊橫幅" class="w-full h-full object-cover">
+                <img src="gassho_winter_banner.jpg" alt="名古屋六日遊橫幅" class="w-full h-full object-cover [mix-blend-mode:normal]">
                 
                 <h1 class="absolute top-8 left-4 text-white text-2xl font-bold z-10">名古屋六日遊</h1>
             </div>
