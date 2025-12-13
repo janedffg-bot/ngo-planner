@@ -307,4 +307,19 @@ const App = {
             </button>
 
             <div v-if="isModalOpen" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                <div @click.stop class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-fade
+                <div @click.stop class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-fade">
+                    <div class="p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">新增行程項目</h2>
+                        <p class="text-gray-500 text-sm">此為示範功能，尚無法實際新增。</p>
+                        <div class="mt-4 flex justify-end space-x-3">
+                            <button @click="closeModal" class="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-100">取消</button>
+                            <button @click="saveItinerary" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">儲存</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `
+};
+
+createApp(App).mount('#app');
