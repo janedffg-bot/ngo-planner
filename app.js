@@ -1,53 +1,43 @@
 const { createApp, ref, computed } = Vue;
 
-// --- 範例行程數據 (已擴展至六天，後三天為空白框架) ---
+// --- 範例行程數據 (維持六天，後三天為空白框架) ---
 const initialTripData = {
-    // 每日行程的數據。如果沒有行程，陣列則為空 [].
     dailyItineraries: {
         '2026-02-04': [
             { id: 1, type: 'flight', name: 'TPE 第一航廈起飛', time: '12:00', location: '桃園國際機場(TPE) - 名古屋中部國際機場(NGO)', details: { note: '表定: Choooo (國泰)' } },
             { id: 2, type: 'transport', name: '購買新特麗亞套票', time: '15:35', location: '中部國際機場國內航廈2樓', details: { note: '機場-岐阜(鐵路)-高山(巴士)' } },
             { id: 3, type: 'meal', name: '晚餐：自訂', time: '19:00', location: '高山市區', details: { note: '飛驒牛或蕎麥麵' } },
         ],
-        // Day 2: 2026-02-05
         '2026-02-05': [
             { id: 4, type: 'attraction', name: '宮川朝市', time: '9:30', location: '岐阜県高山市', details: { note: '請注意保暖，並準備前往新穗高' } },
             { id: 5, type: 'transport', name: '濃飛巴士往新穗高', time: '11:40', location: '濃飛巴士站', details: { note: '在H64 新穂高溫泉下車, 票價 2200' } },
             { id: 6, type: 'attraction', name: '雪屋祭', time: '19:00', location: '新穗高溫泉中尾', details: { note: '新穗高溫泉中尾雪屋祭' } },
         ],
-        // Day 3: 2026-02-06
         '2026-02-06': [
              { id: 7, type: 'attraction', name: '新穗高纜車', time: '9:00', location: '新穗高高空纜車', details: { note: '欣賞北阿爾卑斯雪景' } },
              { id: 8, type: 'meal', name: '高山清酒廠巡禮', time: '15:00', location: '原田酒造場', details: { note: '試飲活動，注意時間不要耽誤' } },
              { id: 9, type: 'meal', name: '晚餐：味の与平', time: '18:30', location: '岐阜県高山市上三之町105', details: { note: '本店官網菜單確認' } },
         ],
-        // **** Day 4: 2026-02-07 (空白行程，等待您填寫) ****
         '2026-02-07': [], 
-        // **** Day 5: 2026-02-08 (空白行程，等待您填寫) ****
         '2026-02-08': [],
-        // **** Day 6: 2026-02-09 (空白行程，等待您填寫) ****
         '2026-02-09': [],
     },
-    // 住宿資訊
     accommodations: [
         { date: '2/4', name: 'ホテルアマネク飛騨高山', address: '岐阜県高山市花里町４‐７５‐３', tel: '0577-36-2222' },
         { date: '2/5', name: 'ホテル穂高', address: '岐阜県高山市奥飛騨温泉郷新穂高温泉', tel: '0578-89-2001' },
         { date: '2/6', name: 'ホテルアマネク飛騨高山', address: '岐阜県高山市花里町４‐７５‐３', tel: '0577-36-2222' },
         { date: '2/7 ~ 2/8', name: 'ベストウェスタンプラス名古屋栄', address: '愛知県名古屋市中区栄４丁目６－１', tel: '052-262-6000' },
     ],
-    // 購物清單 (其餘內容不變...)
     shoppingList: [
         { name: 'Moflin (シルバー)', location: 'ビックカメラ名古屋駅西店', price: 39800, acquired: false },
         { name: '清酒', location: '高山老街', price: null, acquired: false },
         { name: '名古屋限定蝦餅', location: '中部國際機場', price: null, acquired: false },
     ],
-    // 花費記錄 (其餘內容不變...)
     expenses: [
         { category: '交通', name: '新特麗亞套票', date: '2026-02-04', amount: 5500, method: '現金', note: '機場-高山' },
         { category: '住宿', name: 'ホテルアマネク飛騨高山 (2晚)', date: '2026-02-04', amount: 30000, method: '信用卡', note: '總住宿費的一部分' },
         { category: '餐飲', name: '午餐', date: '2026-02-04', amount: 2000, method: '現金', note: '機場輕食' },
     ],
-    // 當前匯率 (例如：1 JPY = 0.22 TWD)
     exchangeRate: 0.22, 
 };
 
@@ -55,7 +45,7 @@ const initialTripData = {
 const tripDates = Object.keys(initialTripData.dailyItineraries).sort();
 
 
-// --- Vue App 主體邏輯 (與上一個版本相同) ---
+// --- Vue App 主體邏輯 ---
 const App = {
     setup() {
         const activeTab = ref('itinerary');
@@ -75,14 +65,19 @@ const App = {
             return { tempMax: '?', tempMin: '?', condition: '未知', location: '未知', note: '' };
         });
 
-        // 計算行程天數的陣列，用於渲染日期按鈕
+        // 修正後的 dateOptions 邏輯
         const dateOptions = computed(() => {
             return tripDates.map((date, index) => {
                 const dayIndex = index + 1;
+                // 取得星期幾 (0=日, 1=一, ..., 6=六)
+                const dayOfWeekIndex = new Date(date).getDay();
+                const dayOfWeek = ['日', '一', '二', '三', '四', '五', '六'][dayOfWeekIndex];
+                
                 return {
                     day: dayIndex,
                     date: date,
-                    display: `${dayIndex}`,
+                    display: `${dayIndex}`, // 顯示第幾天
+                    dayOfWeek: dayOfWeek // 顯示星期幾
                 };
             });
         });
@@ -149,7 +144,6 @@ const App = {
         };
     },
 
-    // --- Template (與上一個版本相同) ---
     template: `
         <div class="relative overflow-hidden">
             <img src="gassho_winter_banner.jpg" alt="合掌村冬日雪景" class="w-full h-full object-cover">
@@ -182,11 +176,11 @@ const App = {
 
             <div v-if="activeTab === 'itinerary'" class="flex flex-col space-y-3">
                 
-                <div class="flex overflow-x-auto space-x-3 mb-4 scrollbar-hide">
+                <div class="flex overflow-x-auto space-x-2 mb-4 scrollbar-hide">
                     <div v-for="option in dateOptions" :key="option.date" @click="selectDate(option.date)"
-                         :class="['flex-shrink-0 w-16 h-16 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-200',
+                         :class="['flex-shrink-0 w-[58px] h-16 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-200',
                                   selectedDate === option.date ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-gray-50']">
-                        <span class="text-sm">週{{ ['日', '一', '二', '三', '四', '五', '六'][new Date(option.date).getDay()] }}</span>
+                        <span class="text-sm">週{{ option.dayOfWeek }}</span>
                         <span class="text-xl font-bold">{{ option.display }}</span>
                     </div>
                 </div>
