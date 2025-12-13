@@ -50,12 +50,11 @@ const App = {
     setup() {
         const activeTab = ref('itinerary');
         const selectedDate = ref(tripDates[0]);
-        // 新增：Modal 狀態
         const isModalOpen = ref(false); 
 
         const tripData = ref(initialTripData);
         
-        // 計算當前日期的天氣資訊 (簡化範例)
+        // 計算當前日期的天氣資訊
         const weatherInfo = computed(() => {
             const date = selectedDate.value;
             if (date === '2026-02-04') return { tempMax: 1, tempMin: -5, condition: '雪', location: '高山/名古屋', note: '體感: -3°C' };
@@ -67,69 +66,58 @@ const App = {
             return { tempMax: '?', tempMin: '?', condition: '未知', location: '未知', note: '' };
         });
 
-        // 修正後的 dateOptions 邏輯
+        // dateOptions 邏輯
         const dateOptions = computed(() => {
             return tripDates.map((date, index) => {
                 const dayIndex = index + 1;
-                // 取得星期幾 (0=日, 1=一, ..., 6=六)
                 const dayOfWeekIndex = new Date(date).getDay();
                 const dayOfWeek = ['日', '一', '二', '三', '四', '五', '六'][dayOfWeekIndex];
                 
                 return {
                     day: dayIndex,
                     date: date,
-                    display: `${dayIndex}`, // 顯示第幾天
-                    dayOfWeek: dayOfWeek // 顯示星期幾
+                    display: `${dayIndex}`, 
+                    dayOfWeek: dayOfWeek 
                 };
             });
         });
 
-        // 顯示當前選中的日期對應的行程
         const currentItinerary = computed(() => {
             return tripData.value.dailyItineraries[selectedDate.value] || [];
         });
 
-        // 計算住宿清單
         const accommodationList = computed(() => {
             return tripData.value.accommodations;
         });
 
-        // 計算購物清單
         const shoppingList = computed(() => {
             return tripData.value.shoppingList;
         });
 
-        // 計算所有花費
         const expenseList = computed(() => {
             return tripData.value.expenses.sort((a, b) => new Date(a.date) - new Date(b.date));
         });
 
-        // 計算總花費 (日圓)
         const totalExpenseJPY = computed(() => {
             return expenseList.value.reduce((sum, item) => sum + (item.amount || 0), 0);
         });
 
-        // 計算總花費 (台幣)
         const totalExpenseTWD = computed(() => {
             return (totalExpenseJPY.value * tripData.value.exchangeRate).toFixed(0);
         });
         
-        // 選擇日期
         const selectDate = (date) => {
             selectedDate.value = date;
         };
 
-        // 選擇 Tab
         const selectTab = (tab) => {
             activeTab.value = tab;
         };
         
-        // 處理購物清單的勾選
         const toggleAcquired = (item) => {
             item.acquired = !item.acquired;
         };
 
-        // Modal 控制
         const openModal = () => {
             isModalOpen.value = true;
         };
@@ -138,9 +126,7 @@ const App = {
             isModalOpen.value = false;
         };
 
-        // 提交新行程 (暫時只是關閉 Modal)
         const saveItinerary = () => {
-             // 實際的儲存邏輯會在之後實作
              alert("行程新增功能開發中...");
              closeModal();
         }
@@ -167,7 +153,7 @@ const App = {
     },
 
     template: `
-        <div class="relative overflow-hidden">
+        <div class="relative overflow-hidden h-[250px]">
             <img src="gassho_winter_banner.jpg" alt="合掌村冬日雪景" class="w-full h-full object-cover">
             
             <div class="absolute inset-0 bg-gray-900 bg-opacity-30"></div>
@@ -193,7 +179,8 @@ const App = {
                 </button>
             </div>
         </div>
-        <main class="pt-32 p-4 bg-gray-100 min-h-[calc(100vh-250px)]">
+
+        <main class="pt-4 p-4 bg-gray-100 min-h-[calc(100vh-250px)]">
 
             <div v-if="activeTab === 'itinerary'" class="flex flex-col space-y-3">
                 
