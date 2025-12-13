@@ -162,7 +162,7 @@ const App = {
             <div class="relative h-[250px] w-full">
                 <img src="gassho_winter_banner.jpg" alt="名古屋六日遊" class="w-full h-full object-cover">
                 <div class="absolute inset-0 bg-gray-900 bg-opacity-30"></div>
-                <h1 class="absolute top-8 left-4 text-white text-2xl font-bold z-10">合掌村冬日雪景</h1>
+                <h1 class="absolute top-8 left-4 text-white text-2xl font-bold z-10">名古屋六日遊</h1>
             </div>
 
             <div class="relative -mt-10 z-20 rounded-t-3xl overflow-hidden bg-gray-100 min-h-[calc(100vh-240px)]">
