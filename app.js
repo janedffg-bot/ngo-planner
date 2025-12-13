@@ -224,13 +224,13 @@ const App = {
                                     <div class="flex items-start space-x-3 overflow-hidden">
                                         <div class="mt-1 flex-shrink-0">
                                             <svg v-if="item.type === 'flight'" class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                                            <svg v-else-if="item.type === 'transport'" class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243m10.121-5.172a1.998 1.998 0 00-2.828 0L10 14.121m4.121-4.121a1.998 1.998 0 00-2.828 0L10 14.121m0 0l-4.243 4.243m4.243-4.243l4.243-4.243"></path></svg>
+                                            <svg v-else-if="item.type === 'transport'" :class="['w-5 h-5', item.type === 'flight' ? 'text-white' : 'text-blue-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243m10.121-5.172a1.998 1.998 0 00-2.828 0L10 14.121m4.121-4.121a1.998 1.998 0 00-2.828 0L10 14.121m0 0l-4.243 4.243m4.243-4.243l4.243-4.243"></path></svg>
                                             <svg v-else-if="item.type === 'attraction'" class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 11l3-3m0 0l3 3m-3-3v8m0-12a9 9 0 110 18 9 9 0 010-18z"></path></svg>
                                             <svg v-else-if="item.type === 'meal'" class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c1.657 0 3 .895 3 2s-1.343 2-3 2v5l-2-2m2-3V6m0 0h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                         </div>
                                         
                                         <div class="flex-1 min-w-0">
-                                            <p class="font-bold text-base truncate">{{ item.name }}</p>
+                                            <p :class="['font-bold text-base truncate', item.type === 'flight' ? 'text-white' : 'text-gray-800']">{{ item.name }}</p>
                                             <p v-if="item.location" :class="['text-xs mt-0.5 truncate', item.type === 'flight' ? 'text-blue-100' : 'text-gray-500']">{{ item.location }}</p>
                                             <p v-if="item.details && item.details.note" :class="['text-xs mt-1', item.type === 'flight' ? 'text-blue-200' : 'text-gray-400']">{{ item.details.note }}</p>
                                         </div>
