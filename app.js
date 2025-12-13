@@ -175,7 +175,7 @@ const App = {
 
             <div v-if="activeTab === 'itinerary'" class="flex flex-col space-y-3">
                 
-                <div class="flex overflow-x-auto space-x-1.5 mb-4 scrollbar-hide">
+                <div class="flex overflow-x-auto space-x-1.5 mb-4 scrollbar-hide h-20"> 
                     <div v-for="option in dateOptions" :key="option.date" @click="selectDate(option.date)"
                          :class="['flex-shrink-0 w-[48px] h-16 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-200',
                                   selectedDate === option.date ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-gray-50']">
