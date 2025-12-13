@@ -145,7 +145,7 @@ const App = {
     },
 
     template: `
-        <div class="relative overflow-hidden mb-[-50px]">
+        <div class="relative overflow-hidden">
             <img src="gassho_winter_banner.jpg" alt="合掌村冬日雪景" class="w-full h-full object-cover">
             
             <div class="absolute inset-0 bg-gray-900 bg-opacity-30"></div>
@@ -171,7 +171,7 @@ const App = {
                 </button>
             </div>
         </div>
-        <main class="pt-4 p-4 bg-gray-100 min-h-[calc(100vh-250px)]">
+        <main class="pt-24 p-4 bg-gray-100 min-h-[calc(100vh-250px)]">
 
             <div v-if="activeTab === 'itinerary'" class="flex flex-col space-y-3">
                 
