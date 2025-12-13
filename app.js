@@ -1,23 +1,41 @@
 const { createApp, ref, computed } = Vue;
 
-// 範例資料結構（簡化）
+// --- 範例行程數據 (已擴展至六天) ---
 const initialTripData = {
-    // 每日行程的範例資料...
+    // 每日行程 (Day 1: 2026-02-04)
     dailyItineraries: {
         '2026-02-04': [
-            { type: 'flight', name: 'TPE 第一航廈起飛', time: '12:00', details: { note: '桃園國際機場(TPE) - 名古屋中部國際機場(NGO)' } },
-            { type: 'transport', name: '購買新特麗亞套票', time: '15:35', location: '中部國際機場國內航廈2樓', details: { note: '機場-岐阜(鐵路)-高山(巴士)' } },
-            { type: 'meal', name: '晚餐：自訂', time: '19:00', details: { note: '高山市區' } },
+            { id: 1, type: 'flight', name: 'TPE 第一航廈起飛', time: '12:00', location: '桃園國際機場(TPE) - 名古屋中部國際機場(NGO)', details: { note: '表定: Choooo (國泰)' } },
+            { id: 2, type: 'transport', name: '購買新特麗亞套票', time: '15:35', location: '中部國際機場國內航廈2樓', details: { note: '機場-岐阜(鐵路)-高山(巴士)' } },
+            { id: 3, type: 'meal', name: '晚餐：自訂', time: '19:00', location: '高山市區', details: { note: '飛驒牛或蕎麥麵' } },
         ],
+        // Day 2: 2026-02-05
         '2026-02-05': [
-            { type: 'attraction', name: '宮川朝市', time: '9:30', location: '岐阜県高山市', details: { note: '請注意保暖，並準備前往新穗高' } },
-            { type: 'transport', name: '濃飛巴士往新穗高', time: '11:40', location: '濃飛巴士站', details: { note: '在H64 新穂高溫泉下車, 票價 2200' } },
-            { type: 'attraction', name: '雪屋祭', time: '19:00', location: '新穗高溫泉中尾', details: { note: '新穗高溫泉中尾雪屋祭' } },
+            { id: 4, type: 'attraction', name: '宮川朝市', time: '9:30', location: '岐阜県高山市', details: { note: '請注意保暖，並準備前往新穗高' } },
+            { id: 5, type: 'transport', name: '濃飛巴士往新穗高', time: '11:40', location: '濃飛巴士站', details: { note: '在H64 新穂高溫泉下車, 票價 2200' } },
+            { id: 6, type: 'attraction', name: '雪屋祭', time: '19:00', location: '新穗高溫泉中尾', details: { note: '新穗高溫泉中尾雪屋祭' } },
         ],
+        // Day 3: 2026-02-06
         '2026-02-06': [
-             { type: 'attraction', name: '新穗高纜車', time: '9:00', location: '新穗高高空纜車', details: { note: '欣賞北阿爾卑斯雪景' } },
-             { type: 'meal', name: '高山清酒廠巡禮', time: '15:00', location: '原田酒造場', details: { note: '試飲活動' } },
-             { type: 'meal', name: '晚餐：味の与平', time: '18:30', location: '岐阜県高山市上三之町105', details: { note: '本店官網菜單' } },
+             { id: 7, type: 'attraction', name: '新穗高纜車', time: '9:00', location: '新穗高高空纜車', details: { note: '欣賞北阿爾卑斯雪景' } },
+             { id: 8, type: 'meal', name: '高山清酒廠巡禮', time: '15:00', location: '原田酒造場', details: { note: '試飲活動，注意時間不要耽誤' } },
+             { id: 9, type: 'meal', name: '晚餐：味の与平', time: '18:30', location: '岐阜県高山市上三之町105', details: { note: '本店官網菜單確認' } },
+        ],
+        // Day 4: 2026-02-07 (新增)
+        '2026-02-07': [
+            { id: 10, type: 'transport', name: '移動至名古屋', time: '10:00', location: '高山濃飛巴士站', details: { note: '高山 -> 名古屋 (高速巴士)' } },
+            { id: 11, type: 'attraction', name: '名古屋城', time: '14:00', location: '愛知県名古屋市中区本丸１−１', details: { note: '下午參觀，可能需要排隊' } },
+        ],
+        // Day 5: 2026-02-08 (新增)
+        '2026-02-08': [
+            { id: 12, type: 'attraction', name: '熱田神宮', time: '9:00', location: '名古屋市熱田區神宮１丁目１−１', details: { note: '日本最古老的神社之一' } },
+            { id: 13, type: 'meal', name: '午餐：蓬萊軒鰻魚飯', time: '12:30', location: '熱田神宮附近', details: { note: '需排隊名店' } },
+            { id: 14, type: 'attraction', name: '大須觀音商店街', time: '15:00', location: '名古屋市中区大須２丁目２１−４７', details: { note: '逛街購物' } },
+        ],
+        // Day 6: 2026-02-09 (新增)
+        '2026-02-09': [
+            { id: 15, type: 'transport', name: '前往中部機場', time: '13:00', location: '名鐵名古屋站', details: { note: '搭乘名鐵μ-SKY特急列車' } },
+            { id: 16, type: 'flight', name: 'NGO 中部國際機場回程', time: '16:00', location: '名古屋中部國際機場(NGO) - 桃園國際機場(TPE)', details: { note: '表定: Choooo (國泰)' } },
         ],
     },
     // 住宿資訊
@@ -27,262 +45,272 @@ const initialTripData = {
         { date: '2/6', name: 'ホテルアマネク飛騨高山', address: '岐阜県高山市花里町４‐７５‐３', tel: '0577-36-2222' },
         { date: '2/7 ~ 2/8', name: 'ベストウェスタンプラス名古屋栄', address: '愛知県名古屋市中区栄４丁目６－１', tel: '052-262-6000' },
     ],
-    // 購物清單 (簡易結構)
+    // 購物清單
     shoppingList: [
         { name: 'Moflin (シルバー)', location: 'ビックカメラ名古屋駅西店', price: 39800, acquired: false },
         { name: '清酒', location: '高山老街', price: null, acquired: false },
+        { name: '名古屋限定蝦餅', location: '中部國際機場', price: null, acquired: false },
     ],
-    // 花費記錄 (簡易結構)
+    // 花費記錄
     expenses: [
         { category: '交通', name: '新特麗亞套票', date: '2026-02-04', amount: 5500, method: '現金', note: '機場-高山' },
         { category: '住宿', name: 'ホテルアマネク飛騨高山 (2晚)', date: '2026-02-04', amount: 30000, method: '信用卡', note: '總住宿費的一部分' },
+        { category: '餐飲', name: '午餐', date: '2026-02-04', amount: 2000, method: '現金', note: '機場輕食' },
     ],
     // 當前匯率 (例如：1 JPY = 0.22 TWD)
     exchangeRate: 0.22, 
 };
+// 取得每日的日期清單並排序
+const tripDates = Object.keys(initialTripData.dailyItineraries).sort();
 
-// 核心 Vue App
+
+// --- Vue App 主體邏輯 ---
 const App = {
     setup() {
-        // 核心狀態
-        const activeTab = ref('itinerary'); // 當前分頁：'itinerary', 'info', 'shopping', 'expense'
+        const activeTab = ref('itinerary'); // 當前選中的標籤: itinerary, accommodation, shopping, expense
+        const selectedDate = ref(tripDates[0]); // 當前選中的日期，預設為第一天
+
         const tripData = ref(initialTripData);
-        const selectedDate = ref('2026-02-04'); // 當前選擇的日期
-        const jpyInput = ref(0); // 匯率換算輸入
+        
+        // 計算當前日期的天氣資訊 (簡化範例)
+        const weatherInfo = computed(() => {
+            const date = selectedDate.value;
+            // 這是簡化的模擬數據，實際應用需串接天氣 API
+            if (date === '2026-02-04') return { tempMax: 1, tempMin: -5, condition: '雪', location: '高山/名古屋', note: '體感: -3°C' };
+            if (date === '2026-02-05') return { tempMax: 0, tempMin: -6, condition: '大雪', location: '新穗高', note: '體感: -5°C' };
+            if (date === '2026-02-06') return { tempMax: 2, tempMin: -4, condition: '晴朗', location: '高山', note: '體感: -2°C' };
+            if (date === '2026-02-07') return { tempMax: 6, tempMin: 0, condition: '多雲', location: '名古屋', note: '體感: 2°C' };
+            if (date === '2026-02-08') return { tempMax: 7, tempMin: 1, condition: '小雨', location: '名古屋', note: '體感: 3°C' };
+            if (date === '2026-02-09') return { tempMax: 8, tempMin: 2, condition: '晴朗', location: '名古屋', note: '體感: 4°C' };
+            return { tempMax: '?', tempMin: '?', condition: '未知', location: '未知', note: '' };
+        });
 
-        // Tab 按鈕定義
-        const tabs = [
-            { id: 'itinerary', icon: 'fa-map-pin', label: '行程' },
-            { id: 'info', icon: 'fa-circle-info', label: '資訊' },
-            { id: 'shopping', icon: 'fa-cart-shopping', label: '購物' },
-            { id: 'expense', icon: 'fa-sack-dollar', label: '花費' },
-        ];
-
-        // 日期選單 (使用行程數據的鍵來生成)
+        // 計算行程天數的陣列，用於渲染日期按鈕
         const dateOptions = computed(() => {
-            return Object.keys(tripData.value.dailyItineraries).map(dateStr => {
-                const date = new Date(dateStr);
-                const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
+            return tripDates.map((date, index) => {
+                const dayIndex = index + 1;
                 return {
-                    full: dateStr,
-                    day: dayNames[date.getDay()], // 星期
-                    date: date.getDate(), // 日期數字
+                    day: dayIndex,
+                    date: date,
+                    display: `${dayIndex}`,
                 };
             });
         });
 
-        // 當日行程
+        // 顯示當前選中的日期對應的行程
         const currentItinerary = computed(() => {
             return tripData.value.dailyItineraries[selectedDate.value] || [];
         });
 
-        // 總花費計算
-        const totalExpenseJPY = computed(() => {
-             return tripData.value.expenses.reduce((sum, item) => sum + item.amount, 0);
-        });
-        
-        // 匯率換算邏輯
-        const convertedTWD = computed(() => {
-            const jpy = parseFloat(jpyInput.value);
-            if (isNaN(jpy) || jpy <= 0) return '0.00';
-            return (jpy * tripData.value.exchangeRate).toFixed(2);
+        // 計算住宿清單
+        const accommodationList = computed(() => {
+            return tripData.value.accommodations;
         });
 
-        // 總花費換算
+        // 計算購物清單
+        const shoppingList = computed(() => {
+            return tripData.value.shoppingList;
+        });
+
+        // 計算所有花費
+        const expenseList = computed(() => {
+            return tripData.value.expenses.sort((a, b) => new Date(a.date) - new Date(b.date));
+        });
+
+        // 計算總花費 (日圓)
+        const totalExpenseJPY = computed(() => {
+            return expenseList.value.reduce((sum, item) => sum + (item.amount || 0), 0);
+        });
+
+        // 計算總花費 (台幣)
         const totalExpenseTWD = computed(() => {
             return (totalExpenseJPY.value * tripData.value.exchangeRate).toFixed(0);
         });
+        
+        // 選擇日期
+        const selectDate = (date) => {
+            selectedDate.value = date;
+        };
 
-        // 點擊行程卡片開啟 Google Maps 導航
-        const navigateTo = (location) => {
-            if (location) {
-                // 此處使用 Google Maps 搜尋 URL，若要精確導航需啟用 API
-                const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
-                window.open(mapUrl, '_blank');
-            } else {
-                alert('沒有提供導航位置資訊。');
-            }
+        // 選擇 Tab
+        const selectTab = (tab) => {
+            activeTab.value = tab;
         };
         
-        // 切換日期
-        const selectDate = (dateStr) => {
-            selectedDate.value = dateStr;
+        // 處理購物清單的勾選
+        const toggleAcquired = (item) => {
+            item.acquired = !item.acquired;
         };
 
         return {
             activeTab,
-            tabs,
-            dateOptions,
             selectedDate,
+            dateOptions,
+            weatherInfo,
             currentItinerary,
-            tripData,
-            navigateTo,
-            convertedTWD,
-            jpyInput,
+            accommodationList,
+            shoppingList,
+            expenseList,
             totalExpenseJPY,
             totalExpenseTWD,
+            selectTab,
             selectDate,
+            toggleAcquired,
+            // 稍後可用來新增功能
+            // createNewItem,
+            // editItem,
+            // deleteItem
         };
     },
-    template: `
-        <div class="relative">
-            <div class="h-[250px] overflow-hidden">
-                <img src="gassho_winter_banner.jpg" 
-                     alt="合掌村冬日雪景" 
-                     class="w-full h-full object-cover">
-            </div>
-            
-            <div class="header-mask absolute bottom-[-50px] w-full bg-ice-blue-light"></div>
 
-            <div class="absolute right-4 bottom-[-75px] z-20 flex space-x-2 p-2 bg-white/90 rounded-xl shadow-xl">
-                <button v-for="tab in tabs" :key="tab.id" 
-                        @click="activeTab = tab.id" 
-                        :class="['w-16 h-16 rounded-lg flex flex-col items-center justify-center transition-colors text-xs', activeTab === tab.id ? 'bg-accent-blue text-white shadow-lg' : 'text-gray-500 hover:bg-gray-100']">
-                    <i :class="['fas text-xl', tab.icon]"></i>
-                    <span class="mt-1">{{ tab.label }}</span>
+    template: `
+        <div class="relative overflow-hidden">
+            <img src="gassho_winter_banner.jpg" alt="合掌村冬日雪景" class="w-full h-full object-cover">
+            
+            <div class="absolute inset-0 bg-gray-900 bg-opacity-30"></div>
+
+            <h1 class="absolute top-8 left-4 text-white text-2xl font-bold">合掌村冬日雪景</h1>
+
+            <div class="absolute bottom-[-50px] left-0 right-0 h-28 bg-white rounded-t-3xl shadow-lg pt-4 px-4 flex justify-between z-10">
+                <button @click="selectTab('itinerary')" :class="['flex-1 p-2 flex flex-col items-center', activeTab === 'itinerary' ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-blue-600']">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    <span>行程</span>
+                </button>
+                <button @click="selectTab('accommodation')" :class="['flex-1 p-2 flex flex-col items-center', activeTab === 'accommodation' ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-blue-600']">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m8-10v12h4L20 9l-4-2z"></path></svg>
+                    <span>資訊</span>
+                </button>
+                <button @click="selectTab('shopping')" :class="['flex-1 p-2 flex flex-col items-center', activeTab === 'shopping' ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-blue-600']">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    <span>購物</span>
+                </button>
+                <button @click="selectTab('expense')" :class="['flex-1 p-2 flex flex-col items-center', activeTab === 'expense' ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-blue-600']">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <span>花費</span>
                 </button>
             </div>
         </div>
 
-        <main class="pt-[75px] p-4 bg-ice-blue-light min-h-[calc(100vh-250px)]">
-            
-            <div v-if="activeTab === 'itinerary'">
-                <div class="flex overflow-x-auto space-x-3 pb-3 mb-4 scrollbar-hide">
-                    <div v-for="date in dateOptions" :key="date.full" 
-                         @click="selectDate(date.full)"
-                         :class="['flex-shrink-0 p-3 rounded-xl cursor-pointer text-center transition-all min-w-[70px]', selectedDate === date.full ? 'bg-accent-blue text-white shadow-md' : 'bg-white text-gray-700 hover:shadow']">
-                        <div class="font-black text-xl leading-none">{{ date.day }}</div>
-                        <div class="text-sm">{{ date.date }}</div>
-                    </div>
-                </div>
+        <main class="pt-[100px] p-4 bg-gray-100 min-h-[calc(100vh-250px)]">
 
-                <div class="mb-6 p-4 bg-ice-blue-dark rounded-xl shadow-md flex items-center justify-between border-l-4 border-accent-blue">
-                    <div class="flex items-center space-x-3">
-                        <i class="fas fa-snowflake text-4xl text-blue-400"></i> <div>
-                            <p class="text-sm text-gray-500">{{ selectedDate }} 天氣 (高山/名古屋)</p>
-                            <p class="text-2xl font-bold text-gray-800">1°C / -5°C</p>
-                        </div>
-                    </div>
-                    <p class="text-sm text-gray-600">體感: -3°C</p>
-                </div>
-
-                <div v-if="currentItinerary.length" class="space-y-4">
-                    <div v-for="(item, index) in currentItinerary" :key="index">
-                        
-                        <div v-if="index > 0" class="flex items-center justify-center space-x-2 text-sm text-gray-500 my-2">
-                            <i class="fas fa-route"></i>
-                            <span class="font-semibold">~ 35 分鐘</span>
-                            <i class="fas fa-bus-simple"></i>
-                        </div>
-
-                        <div @click="navigateTo(item.location || item.details?.note)"
-                             :class="['p-4 rounded-xl shadow-lg transition-shadow cursor-pointer border-l-4', 
-                                      item.type === 'flight' ? 'bg-accent-blue text-white border-white' : 'bg-white hover:shadow-xl border-accent-blue']">
-                            
-                            <div v-if="item.type === 'flight'" class="flex justify-between items-start">
-                                <div>
-                                    <p class="text-sm font-semibold opacity-80">🛫 {{ item.details?.note }}</p>
-                                    <h3 class="text-2xl font-black mt-1">{{ item.time }}</h3>
-                                    <p class="text-xs opacity-80">航班編號: CIxxxx (模擬)</p>
-                                </div>
-                                <i class="fas fa-plane text-4xl opacity-70"></i>
-                            </div>
-                            
-                            <div v-else>
-                                <div class="flex justify-between items-start mb-2">
-                                    <h3 class="text-lg font-bold">{{ item.name }}</h3>
-                                    <span class="text-sm font-semibold" :class="item.type === 'flight' ? 'text-white' : 'text-accent-blue'">{{ item.time || '全日' }}</span>
-                                </div>
-                                <p class="text-sm text-gray-600 truncate" :class="item.type === 'flight' ? 'text-white/80' : 'text-gray-600'">
-                                    {{ item.details?.note || '點擊導航' }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <button class="fixed right-6 bottom-6 w-14 h-14 bg-accent-blue text-white rounded-full shadow-2xl transition-transform hover:scale-110 z-30">
-                    <i class="fas fa-plus text-2xl"></i>
-                </button>
-            </div>
-            
-            <div v-else-if="activeTab === 'info'">
-                <h2 class="text-2xl font-bold mb-6 text-gray-700">ℹ️ 資訊中心</h2>
-
-                <div class="p-4 bg-white rounded-xl shadow-lg mb-6 border-l-4 border-accent-blue">
-                    <h3 class="text-xl font-bold mb-3 text-accent-blue">💰 匯率換算</h3>
-                    <p class="text-sm text-gray-500 mb-2">當日匯率： 1 JPY ≈ {{ tripData.exchangeRate }} TWD</p>
-                    <div class="flex space-x-2 items-center">
-                        <input type="number" v-model="jpyInput" placeholder="日幣金額 (JPY)" class="flex-grow p-3 border rounded-lg focus:ring-accent-blue focus:border-accent-blue" />
-                        <span class="text-lg font-bold">=</span>
-                        <div class="p-3 font-bold text-lg bg-ice-blue-light rounded-lg text-gray-800">
-                           NT$ {{ convertedTWD }}
-                        </div>
-                    </div>
-                </div>
+            <div v-if="activeTab === 'itinerary'" class="flex flex-col space-y-3">
                 
-                <div class="p-4 bg-white rounded-xl shadow-lg mb-6 border-l-4 border-accent-blue">
-                    <h3 class="text-xl font-bold mb-3 text-accent-blue">🏠 住宿資訊</h3>
-                    <div v-for="acc in tripData.accommodations" :key="acc.date" class="border-b last:border-b-0 py-3">
-                        <p class="font-bold">{{ acc.date }} - {{ acc.name }}</p>
-                        <p class="text-sm text-gray-600">地址: {{ acc.address }}</p>
-                        <div class="flex justify-between items-center text-sm mt-1">
-                            <span class="text-gray-500">電話: {{ acc.tel }}</span>
-                            <a href="#" @click.prevent="navigateTo(acc.address)" class="font-semibold text-accent-blue hover:underline"><i class="fas fa-location-dot"></i> 導航</a>
+                <div class="flex overflow-x-auto space-x-3 mb-4 scrollbar-hide">
+                    <div v-for="option in dateOptions" :key="option.date" @click="selectDate(option.date)"
+                         :class="['flex-shrink-0 w-16 h-16 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-200',
+                                  selectedDate === option.date ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-gray-50']">
+                        <span class="text-sm">週{{ ['日', '一', '二', '三', '四', '五', '六'][new Date(option.date).getDay()] }}</span>
+                        <span class="text-xl font-bold">{{ option.display }}</span>
+                    </div>
+                </div>
+
+                <div v-if="weatherInfo" class="bg-gradient-to-r from-blue-300 to-blue-400 p-4 rounded-xl shadow-md text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-light">{{ selectedDate }} 天氣 ({{ weatherInfo.location }})</p>
+                            <div class="flex items-end mt-1">
+                                <span class="text-4xl font-extrabold">{{ weatherInfo.tempMax }}°C / {{ weatherInfo.tempMin }}°C</span>
+                                <span class="ml-3 text-lg">{{ weatherInfo.condition }}</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <svg v-if="weatherInfo.condition.includes('雪')" class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12.5a.5.5 0 11-1 0 .5.5 0 011 0zm-5 0a.5.5 0 11-1 0 .5.5 0 011 0zm-5 0a.5.5 0 11-1 0 .5.5 0 011 0zM12 21a9 9 0 100-18 9 9 0 000 18z"></path></svg>
+                            <svg v-else-if="weatherInfo.condition.includes('晴')" class="w-10 h-10 text-yellow-300" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.25a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 7.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H8.25a.75.75 0 01-.75-.75zM3 12a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zM7.5 16.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H8.25a.75.75 0 01-.75-.75zM12 21.75a.75.75 0 01-.75-.75v-1.5a.75.75 0 011.5 0v1.5a.75.75 0 01-.75.75zM16.5 16.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zM21 12a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5a.75.75 0 01.75.75zM16.5 7.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zM12 7a5 5 0 100 10 5 5 0 000-10z"></path></svg>
+                            <span class="text-xs">{{ weatherInfo.note }}</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="p-4 bg-white rounded-xl shadow-lg border-l-4 border-red-400">
-                    <h3 class="text-xl font-bold mb-3 text-red-500">🚨 緊急聯絡</h3>
-                    <p class="text-sm mb-1">日本警察： 110</p>
-                    <p class="text-sm">日本救護車/火警： 119</p>
+                <div v-if="currentItinerary.length" class="space-y-3">
+                    <template v-for="(item, index) in currentItinerary" :key="item.id">
+                        <div 
+                             :class="['p-4 rounded-xl shadow-md flex justify-between items-center', item.type === 'flight' ? 'bg-blue-600 text-white' : item.type === 'meal' ? 'bg-yellow-100 text-gray-800' : 'bg-white text-gray-800']">
+                            
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-shrink-0">
+                                    <svg v-if="item.type === 'flight'" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                                    <svg v-else-if="item.type === 'transport'" :class="['w-6 h-6', item.type === 'flight' ? 'text-white' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243m10.121-5.172a1.998 1.998 0 00-2.828 0L10 14.121m4.121-4.121a1.998 1.998 0 00-2.828 0L10 14.121m0 0l-4.243 4.243m4.243-4.243l4.243-4.243"></path></svg>
+                                    <svg v-else-if="item.type === 'attraction'" class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 11l3-3m0 0l3 3m-3-3v8m0-12a9 9 0 110 18 9 9 0 010-18z"></path></svg>
+                                    <svg v-else-if="item.type === 'meal'" class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c1.657 0 3 .895 3 2s-1.343 2-3 2v5l-2-2m2-3V6m0 0h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <svg v-else class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                </div>
+                                
+                                <div :class="{'text-white': item.type === 'flight', 'text-gray-800': item.type !== 'flight'}">
+                                    <p class="font-semibold">{{ item.name }}</p>
+                                    <p v-if="item.location" :class="['text-sm', item.type === 'flight' ? 'text-blue-200' : 'text-gray-500']">{{ item.location }}</p>
+                                    <p v-if="item.details && item.details.note" :class="['text-xs mt-1', item.type === 'flight' ? 'text-blue-300' : 'text-gray-400']">{{ item.details.note }}</p>
+                                </div>
+                            </div>
+
+                            <div :class="['text-right flex-shrink-0', item.type === 'flight' ? 'text-white' : 'font-bold text-gray-800']">
+                                {{ item.time }}
+                            </div>
+                        </div>
+                        
+                        <div v-if="index < currentItinerary.length - 1" class="flex items-center justify-center text-sm text-gray-400 py-1">
+                            ~ 35 分鐘 🚌
+                        </div>
+                    </template>
+                </div>
+
+                <p v-else class="text-center text-gray-500 p-8 bg-white rounded-xl shadow-md">今日無行程安排</p>
+            </div>
+
+            <div v-else-if="activeTab === 'accommodation'" class="space-y-3">
+                <h2 class="text-xl font-bold mb-3 text-gray-700">住宿資訊</h2>
+                <div v-for="(item, index) in accommodationList" :key="index" class="bg-white p-4 rounded-xl shadow-md">
+                    <p class="text-sm font-light text-gray-500">入住日期: {{ item.date }}</p>
+                    <p class="text-lg font-semibold text-blue-600 mt-1">{{ item.name }}</p>
+                    <p class="text-sm text-gray-700 mt-1">地址: {{ item.address }}</p>
+                    <p v-if="item.tel" class="text-sm text-gray-700">電話: {{ item.tel }}</p>
                 </div>
             </div>
 
-            <div v-else-if="activeTab === 'shopping'">
-                 <h2 class="text-2xl font-bold mb-6 text-gray-700">🛍️ 購物清單</h2>
-                 
-                 <div class="space-y-3">
-                    <div v-for="(item, index) in tripData.shoppingList" :key="index"
-                         class="p-4 bg-white rounded-xl shadow-md flex justify-between items-center transition-all hover:bg-ice-blue-dark">
-                        <div>
-                            <p class="font-semibold" :class="{ 'line-through text-gray-500': item.acquired }">{{ item.name }}</p>
-                            <p class="text-xs text-gray-500">{{ item.location }} <span v-if="item.price"> (¥ {{ item.price }})</span></p>
-                        </div>
-                        <button class="text-accent-blue"><i class="fas fa-check-circle text-xl" :class="{ 'text-green-500': item.acquired }"></i></button>
+            <div v-else-if="activeTab === 'shopping'" class="space-y-3">
+                <h2 class="text-xl font-bold mb-3 text-gray-700">購物清單</h2>
+                <div v-for="(item, index) in shoppingList" :key="index" 
+                     :class="['bg-white p-4 rounded-xl shadow-md flex justify-between items-center cursor-pointer transition-all duration-200', item.acquired ? 'opacity-50 line-through' : '']"
+                     @click="toggleAcquired(item)">
+                    <div>
+                        <p :class="['font-semibold', item.acquired ? 'text-gray-400' : 'text-gray-800']">{{ item.name }}</p>
+                        <p v-if="item.location" class="text-sm text-gray-500">地點: {{ item.location }}</p>
                     </div>
-                 </div>
-                 
-                 <button class="fixed right-6 bottom-6 w-14 h-14 bg-accent-blue text-white rounded-full shadow-2xl transition-transform hover:scale-110 z-30">
-                    <i class="fas fa-plus text-2xl"></i>
-                 </button>
+                    <div class="text-right">
+                        <p v-if="item.price" class="font-bold text-green-600 text-lg">¥ {{ item.price ? item.price.toLocaleString() : '自訂' }}</p>
+                        <div :class="['w-6 h-6 rounded-full border-2 flex items-center justify-center mt-1', item.acquired ? 'bg-green-500 border-green-500' : 'border-gray-300']">
+                            <svg v-if="item.acquired" class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div v-else-if="activeTab === 'expense'">
-                 <h2 class="text-2xl font-bold mb-6 text-gray-700">💸 花費記錄</h2>
-                 <div class="p-4 bg-accent-blue text-white rounded-xl shadow-lg mb-6 text-center">
-                    <p class="text-sm opacity-80">總花費 (日幣 / 台幣)</p>
-                    <p class="text-3xl font-black">¥ {{ totalExpenseJPY.toLocaleString() }} (~NT$ {{ totalExpenseTWD.toLocaleString() }})</p>
-                 </div>
-                 
-                 <div class="space-y-3">
-                    <div v-for="(item, index) in tripData.expenses" :key="index"
-                         class="p-4 bg-white rounded-xl shadow-md flex justify-between items-center border-l-4 border-gray-300 transition-all hover:shadow-lg">
-                        <div>
-                            <p class="font-bold">{{ item.name }} ({{ item.category }})</p>
-                            <p class="text-sm text-gray-600">{{ item.date }} / {{ item.method }}</p>
-                        </div>
-                        <p class="text-lg font-bold text-red-500">¥ {{ item.amount.toLocaleString() }}</p>
+            <div v-else-if="activeTab === 'expense'" class="space-y-3">
+                <h2 class="text-xl font-bold mb-3 text-gray-700">花費紀錄</h2>
+                
+                <div class="bg-blue-600 text-white p-4 rounded-xl shadow-lg mb-4">
+                    <p class="text-sm font-light">總花費 (日圓)</p>
+                    <p class="text-3xl font-extrabold mt-1">¥ {{ totalExpenseJPY.toLocaleString() }}</p>
+                    <p class="text-sm font-light mt-2">約 TWD {{ totalExpenseTWD.toLocaleString() }} (匯率 {{ tripData.exchangeRate }})</p>
+                </div>
+
+                <div v-for="(item, index) in expenseList" :key="index" class="bg-white p-4 rounded-xl shadow-md flex justify-between items-center">
+                    <div>
+                        <p class="text-sm font-light text-gray-500">{{ item.date }} ({{ item.category }})</p>
+                        <p class="text-lg font-semibold text-gray-800 mt-1">{{ item.name }}</p>
+                        <p v-if="item.note" class="text-xs text-gray-400 mt-1">{{ item.note }}</p>
                     </div>
-                 </div>
-                 
-                 <button class="fixed right-6 bottom-6 w-14 h-14 bg-accent-blue text-white rounded-full shadow-2xl transition-transform hover:scale-110 z-30">
-                    <i class="fas fa-plus text-2xl"></i>
-                 </button>
+                    <div class="text-right">
+                        <p class="font-bold text-red-500 text-xl">¥ {{ item.amount.toLocaleString() }}</p>
+                        <p class="text-sm text-gray-500">{{ item.method }}</p>
+                    </div>
+                </div>
             </div>
 
+            <button class="fixed bottom-6 right-6 w-12 h-12 bg-blue-600 rounded-full text-white shadow-xl flex items-center justify-center text-3xl font-light hover:bg-blue-700 transition-colors duration-200">
+                +
+            </button>
         </main>
+    </div>
     `,
 };
 
