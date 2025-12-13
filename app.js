@@ -1,6 +1,6 @@
 const { createApp, ref, computed } = Vue;
 
-// --- 範例行程數據 (維持六天，後三天為空白框架) ---
+// --- 範例行程數據 (維持不變) ---
 const initialTripData = {
     dailyItineraries: {
         '2026-02-04': [
@@ -54,7 +54,6 @@ const App = {
 
         const tripData = ref(initialTripData);
         
-        // 計算當前日期的天氣資訊
         const weatherInfo = computed(() => {
             const date = selectedDate.value;
             if (date === '2026-02-04') return { tempMax: 1, tempMin: -5, condition: '雪', location: '高山/名古屋', note: '體感: -3°C' };
@@ -66,7 +65,6 @@ const App = {
             return { tempMax: '?', tempMin: '?', condition: '未知', location: '未知', note: '' };
         });
 
-        // dateOptions 邏輯
         const dateOptions = computed(() => {
             return tripDates.map((date, index) => {
                 const dayIndex = index + 1;
@@ -153,194 +151,183 @@ const App = {
     },
 
     template: `
-        <div class="relative overflow-hidden h-[250px]">
-            <img src="gassho_winter_banner.jpg" alt="合掌村冬日雪景" class="w-full h-full object-cover">
+        <div class="min-h-screen bg-gray-100">
             
-            <div class="absolute inset-0 bg-gray-900 bg-opacity-30"></div>
-
-            <h1 class="absolute top-8 left-4 text-white text-2xl font-bold">合掌村冬日雪景</h1>
-
-            <div class="absolute bottom-0 left-0 right-0 h-28 bg-white rounded-t-3xl shadow-lg pt-4 px-4 flex w-full justify-around z-10">
-                <button @click="selectTab('itinerary')" :class="['flex-1 p-2 flex flex-col items-center', activeTab === 'itinerary' ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-blue-600']">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                    <span>行程</span>
-                </button>
-                <button @click="selectTab('accommodation')" :class="['flex-1 p-2 flex flex-col items-center', activeTab === 'accommodation' ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-blue-600']">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m8-10v12h4L20 9l-4-2z"></path></svg>
-                    <span>資訊</span>
-                </button>
-                <button @click="selectTab('shopping')" :class="['flex-1 p-2 flex flex-col items-center', activeTab === 'shopping' ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-blue-600']">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                    <span>購物</span>
-                </button>
-                <button @click="selectTab('expense')" :class="['flex-1 p-2 flex flex-col items-center', activeTab === 'expense' ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-blue-600']">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                    <span>花費</span>
-                </button>
+            <div class="relative h-[280px] w-full">
+                <img src="gassho_winter_banner.jpg" alt="合掌村冬日雪景" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gray-900 bg-opacity-30"></div>
+                <h1 class="absolute top-8 left-4 text-white text-2xl font-bold z-10">合掌村冬日雪景</h1>
             </div>
-        </div>
 
-        <main class="pt-4 p-4 bg-gray-100 min-h-[calc(100vh-250px)]">
-
-            <div v-if="activeTab === 'itinerary'" class="flex flex-col space-y-3">
+            <div class="relative -mt-10 z-20 rounded-t-3xl overflow-hidden bg-gray-100 min-h-[calc(100vh-240px)]">
                 
-                <div class="flex overflow-x-auto space-x-1.5 scrollbar-hide pb-4"> 
-                    <div v-for="option in dateOptions" :key="option.date" @click="selectDate(option.date)"
-                         :class="['flex-shrink-0 w-[48px] h-16 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-200',
-                                  selectedDate === option.date ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-gray-50']">
-                        <span class="text-xs">週{{ option.dayOfWeek }}</span>
-                        <span class="text-xl font-bold">{{ option.display }}</span>
-                    </div>
-                </div>
-
-                <div v-if="weatherInfo" class="bg-gradient-to-r from-blue-300 to-blue-400 p-4 rounded-xl shadow-md text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-light">{{ selectedDate }} 天氣 ({{ weatherInfo.location }})</p>
-                            <div class="flex items-end mt-1">
-                                <span class="text-4xl font-extrabold">{{ weatherInfo.tempMax }}°C / {{ weatherInfo.tempMin }}°C</span>
-                                <span class="ml-3 text-lg">{{ weatherInfo.condition }}</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <svg v-if="weatherInfo.condition.includes('雪')" class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12.5a.5.5 0 11-1 0 .5.5 0 011 0zm-5 0a.5.5 0 11-1 0 .5.5 0 011 0zm-5 0a.5.5 0 11-1 0 .5.5 0 011 0zM12 21a9 9 0 100-18 9 9 0 000 18z"></path></svg>
-                            <svg v-else-if="weatherInfo.condition.includes('晴')" class="w-10 h-10 text-yellow-300" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.25a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 7.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H8.25a.75.75 0 01-.75-.75zM3 12a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zM7.5 16.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H8.25a.75.75 0 01-.75-.75zM12 21.75a.75.75 0 01-.75-.75v-1.5a.75.75 0 011.5 0v1.5a.75.75 0 01-.75.75zM16.5 16.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zM21 12a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5a.75.75 0 01.75.75zM16.5 7.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zM12 7a5 5 0 100 10 5 5 0 000-10z"></path></svg>
-                            <span class="text-xs">{{ weatherInfo.note }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div v-if="currentItinerary.length" class="space-y-3">
-                    <template v-for="(item, index) in currentItinerary" :key="item.id">
-                        <div 
-                             :class="['p-4 rounded-xl shadow-md flex justify-between items-center', item.type === 'flight' ? 'bg-blue-600 text-white' : item.type === 'meal' ? 'bg-yellow-100 text-gray-800' : 'bg-white text-gray-800']">
-                            
-                            <div class="flex items-center space-x-3">
-                                <div class="flex-shrink-0">
-                                    <svg v-if="item.type === 'flight'" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                                    <svg v-else-if="item.type === 'transport'" :class="['w-6 h-6', item.type === 'flight' ? 'text-white' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243m10.121-5.172a1.998 1.998 0 00-2.828 0L10 14.121m4.121-4.121a1.998 1.998 0 00-2.828 0L10 14.121m0 0l-4.243 4.243m4.243-4.243l4.243-4.243"></path></svg>
-                                    <svg v-else-if="item.type === 'attraction'" class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 11l3-3m0 0l3 3m-3-3v8m0-12a9 9 0 110 18 9 9 0 010-18z"></path></svg>
-                                    <svg v-else-if="item.type === 'meal'" class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c1.657 0 3 .895 3 2s-1.343 2-3 2v5l-2-2m2-3V6m0 0h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    <svg v-else class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                </div>
-                                
-                                <div :class="{'text-white': item.type === 'flight', 'text-gray-800': item.type !== 'flight'}">
-                                    <p class="font-semibold">{{ item.name }}</p>
-                                    <p v-if="item.location" :class="['text-sm', item.type === 'flight' ? 'text-blue-200' : 'text-gray-500']">{{ item.location }}</p>
-                                    <p v-if="item.details && item.details.note" :class="['text-xs mt-1', item.type === 'flight' ? 'text-blue-300' : 'text-gray-400']">{{ item.details.note }}</p>
-                                </div>
-                            </div>
-
-                            <div :class="['text-right flex-shrink-0', item.type === 'flight' ? 'text-white' : 'font-bold text-gray-800']">
-                                {{ item.time }}
-                            </div>
-                        </div>
-                        
-                        <div v-if="index < currentItinerary.length - 1" class="flex items-center justify-center text-sm text-gray-400 py-1">
-                            ~ 35 分鐘 🚌
-                        </div>
-                    </template>
-                </div>
-
-                <p v-else class="text-center text-gray-500 p-8 bg-white rounded-xl shadow-md">今日無行程安排</p>
-            </div>
-
-            <div v-else-if="activeTab === 'accommodation'" class="space-y-3">
-                <h2 class="text-xl font-bold mb-3 text-gray-700">住宿資訊</h2>
-                <div v-for="(item, index) in accommodationList" :key="index" class="bg-white p-4 rounded-xl shadow-md">
-                    <p class="text-sm font-light text-gray-500">入住日期: {{ item.date }}</p>
-                    <p class="text-lg font-semibold text-blue-600 mt-1">{{ item.name }}</p>
-                    <p class="text-sm text-gray-700 mt-1">地址: {{ item.address }}</p>
-                    <p v-if="item.tel" class="text-sm text-gray-700">電話: {{ item.tel }}</p>
-                </div>
-            </div>
-
-            <div v-else-if="activeTab === 'shopping'" class="space-y-3">
-                <h2 class="text-xl font-bold mb-3 text-gray-700">購物清單</h2>
-                <div v-for="(item, index) in shoppingList" :key="index" 
-                     :class="['bg-white p-4 rounded-xl shadow-md flex justify-between items-center cursor-pointer transition-all duration-200', item.acquired ? 'opacity-50 line-through' : '']"
-                     @click="toggleAcquired(item)">
-                    <div>
-                        <p :class="['font-semibold', item.acquired ? 'text-gray-400' : 'text-gray-800']">{{ item.name }}</p>
-                        <p v-if="item.location" class="text-sm text-gray-500">地點: {{ item.location }}</p>
-                    </div>
-                    <div class="text-right">
-                        <p v-if="item.price" class="font-bold text-green-600 text-lg">¥ {{ item.price ? item.price.toLocaleString() : '自訂' }}</p>
-                        <div :class="['w-6 h-6 rounded-full border-2 flex items-center justify-center mt-1', item.acquired ? 'bg-green-500 border-green-500' : 'border-gray-300']">
-                            <svg v-if="item.acquired" class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div v-else-if="activeTab === 'expense'" class="space-y-3">
-                <h2 class="text-xl font-bold mb-3 text-gray-700">花費紀錄</h2>
-                
-                <div class="bg-blue-600 text-white p-4 rounded-xl shadow-lg mb-4">
-                    <p class="text-sm font-light">總花費 (日圓)</p>
-                    <p class="text-3xl font-extrabold mt-1">¥ {{ totalExpenseJPY.toLocaleString() }}</p>
-                    <p class="text-sm font-light mt-2">約 TWD {{ totalExpenseTWD.toLocaleString() }} (匯率 {{ tripData.exchangeRate }})</p>
-                </div>
-
-                <div v-for="(item, index) in expenseList" :key="index" class="bg-white p-4 rounded-xl shadow-md flex justify-between items-center">
-                    <div>
-                        <p class="text-sm font-light text-gray-500">{{ item.date }} ({{ item.category }})</p>
-                        <p class="text-lg font-semibold text-gray-800 mt-1">{{ item.name }}</p>
-                        <p v-if="item.note" class="text-xs text-gray-400 mt-1">{{ item.note }}</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-bold text-red-500 text-xl">¥ {{ item.amount.toLocaleString() }}</p>
-                        <p class="text-sm text-gray-500">{{ item.method }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <button @click="openModal" class="fixed bottom-6 right-6 w-12 h-12 bg-blue-600 rounded-full text-white shadow-xl flex items-center justify-center text-3xl font-light hover:bg-blue-700 transition-colors duration-200 z-20">
-                +
-            </button>
-        </main>
-
-        <div v-if="isModalOpen" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-30 flex items-center justify-center">
-            <div @click.stop class="bg-white rounded-lg shadow-xl p-6 m-4 w-full max-w-md">
-                <div class="flex justify-between items-center pb-3">
-                    <h3 class="text-xl font-bold text-gray-800">新增行程</h3>
-                    <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                <div class="bg-white px-4 pt-3 pb-2 shadow-sm flex w-full justify-around">
+                    <button @click="selectTab('itinerary')" :class="['flex-1 p-2 flex flex-col items-center', activeTab === 'itinerary' ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-blue-600']">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                        <span class="text-xs mt-1">行程</span>
+                    </button>
+                    <button @click="selectTab('accommodation')" :class="['flex-1 p-2 flex flex-col items-center', activeTab === 'accommodation' ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-blue-600']">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m8-10v12h4L20 9l-4-2z"></path></svg>
+                        <span class="text-xs mt-1">資訊</span>
+                    </button>
+                    <button @click="selectTab('shopping')" :class="['flex-1 p-2 flex flex-col items-center', activeTab === 'shopping' ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-blue-600']">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                        <span class="text-xs mt-1">購物</span>
+                    </button>
+                    <button @click="selectTab('expense')" :class="['flex-1 p-2 flex flex-col items-center', activeTab === 'expense' ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-blue-600']">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <span class="text-xs mt-1">花費</span>
                     </button>
                 </div>
-                
-                <form @submit.prevent="saveItinerary" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">日期</label>
-                        <input type="date" :value="selectedDate" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500">
+
+                <div class="p-4 pb-20">
+                    
+                    <div v-if="activeTab === 'itinerary'" class="flex flex-col space-y-4">
+                        
+                        <div class="flex overflow-x-auto space-x-2 scrollbar-hide py-1"> 
+                            <div v-for="option in dateOptions" :key="option.date" @click="selectDate(option.date)"
+                                 :class="['flex-shrink-0 w-[50px] h-14 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-200 border',
+                                          selectedDate === option.date ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50']">
+                                <span class="text-[10px]">週{{ option.dayOfWeek }}</span>
+                                <span class="text-lg font-bold leading-none">{{ option.display }}</span>
+                            </div>
+                        </div>
+
+                        <div v-if="weatherInfo" class="bg-gradient-to-r from-blue-400 to-blue-500 p-4 rounded-xl shadow text-white">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs opacity-90">{{ selectedDate }} 天氣 ({{ weatherInfo.location }})</p>
+                                    <div class="flex items-baseline mt-1">
+                                        <span class="text-3xl font-bold">{{ weatherInfo.tempMax }}°</span>
+                                        <span class="text-xl font-light opacity-80 mx-1">/</span>
+                                        <span class="text-xl font-light opacity-80">{{ weatherInfo.tempMin }}°</span>
+                                        <span class="ml-2 text-sm">{{ weatherInfo.condition }}</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <svg v-if="weatherInfo.condition.includes('雪')" class="w-8 h-8 inline-block opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12.5a.5.5 0 11-1 0 .5.5 0 011 0zm-5 0a.5.5 0 11-1 0 .5.5 0 011 0zm-5 0a.5.5 0 11-1 0 .5.5 0 011 0zM12 21a9 9 0 100-18 9 9 0 000 18z"></path></svg>
+                                    <svg v-else-if="weatherInfo.condition.includes('晴')" class="w-8 h-8 inline-block opacity-90 text-yellow-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.25a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 7.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H8.25a.75.75 0 01-.75-.75zM3 12a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zM7.5 16.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H8.25a.75.75 0 01-.75-.75zM12 21.75a.75.75 0 01-.75-.75v-1.5a.75.75 0 011.5 0v1.5a.75.75 0 01-.75.75zM16.5 16.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zM21 12a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5a.75.75 0 01.75.75zM16.5 7.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zM12 7a5 5 0 100 10 5 5 0 000-10z"></path></svg>
+                                    <p class="text-xs mt-1">{{ weatherInfo.note }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-if="currentItinerary.length" class="space-y-4">
+                            <template v-for="(item, index) in currentItinerary" :key="item.id">
+                                <div :class="['p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start', item.type === 'flight' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-800']">
+                                    <div class="flex items-start space-x-3 overflow-hidden">
+                                        <div class="mt-1 flex-shrink-0">
+                                            <svg v-if="item.type === 'flight'" class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                                            <svg v-else-if="item.type === 'transport'" class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243m10.121-5.172a1.998 1.998 0 00-2.828 0L10 14.121m4.121-4.121a1.998 1.998 0 00-2.828 0L10 14.121m0 0l-4.243 4.243m4.243-4.243l4.243-4.243"></path></svg>
+                                            <svg v-else-if="item.type === 'attraction'" class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 11l3-3m0 0l3 3m-3-3v8m0-12a9 9 0 110 18 9 9 0 010-18z"></path></svg>
+                                            <svg v-else-if="item.type === 'meal'" class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c1.657 0 3 .895 3 2s-1.343 2-3 2v5l-2-2m2-3V6m0 0h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        </div>
+                                        
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-bold text-base truncate">{{ item.name }}</p>
+                                            <p v-if="item.location" :class="['text-xs mt-0.5 truncate', item.type === 'flight' ? 'text-blue-100' : 'text-gray-500']">{{ item.location }}</p>
+                                            <p v-if="item.details && item.details.note" :class="['text-xs mt-1', item.type === 'flight' ? 'text-blue-200' : 'text-gray-400']">{{ item.details.note }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div :class="['text-sm font-mono flex-shrink-0 ml-2', item.type === 'flight' ? 'text-white' : 'text-gray-900 font-semibold']">
+                                        {{ item.time }}
+                                    </div>
+                                </div>
+                                
+                                <div v-if="index < currentItinerary.length - 1" class="pl-6 border-l-2 border-dashed border-gray-300 ml-6 h-6"></div>
+                            </template>
+                        </div>
+
+                        <p v-else class="text-center text-gray-400 py-10">今日無行程安排</p>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">時間</label>
-                        <input type="time" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+
+                    <div v-else-if="activeTab === 'accommodation'" class="space-y-3">
+                        <div v-for="(item, index) in accommodationList" :key="index" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                            <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded mb-2">{{ item.date }}</span>
+                            <p class="text-lg font-bold text-gray-800">{{ item.name }}</p>
+                            <div class="flex items-start mt-2 text-gray-500 text-sm">
+                                <svg class="w-4 h-4 mt-0.5 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243m10.121-5.172a1.998 1.998 0 00-2.828 0L10 14.121m4.121-4.121a1.998 1.998 0 00-2.828 0L10 14.121m0 0l-4.243 4.243m4.243-4.243l4.243-4.243"></path></svg>
+                                <span>{{ item.address }}</span>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">事件名稱</label>
-                        <input type="text" placeholder="例如：新穗高纜車" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+
+                    <div v-else-if="activeTab === 'shopping'" class="space-y-3">
+                        <div v-for="(item, index) in shoppingList" :key="index" 
+                             :class="['bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center cursor-pointer', item.acquired ? 'bg-gray-50' : '']"
+                             @click="toggleAcquired(item)">
+                            <div class="flex items-center space-x-3">
+                                <div :class="['w-5 h-5 rounded border flex items-center justify-center', item.acquired ? 'bg-green-500 border-green-500' : 'border-gray-300']">
+                                    <svg v-if="item.acquired" class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </div>
+                                <div>
+                                    <p :class="['font-medium', item.acquired ? 'text-gray-400 line-through' : 'text-gray-800']">{{ item.name }}</p>
+                                    <p v-if="item.location" class="text-xs text-gray-500">{{ item.location }}</p>
+                                </div>
+                            </div>
+                            <p v-if="item.price" class="text-sm font-bold text-gray-600">¥{{ item.price }}</p>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">類型</label>
-                        <select class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                            <option value="attraction">景點</option>
-                            <option value="meal">餐飲</option>
-                            <option value="transport">交通</option>
-                            <option value="flight">航班</option>
-                        </select>
+
+                    <div v-else-if="activeTab === 'expense'" class="space-y-3">
+                        <div class="bg-gray-800 text-white p-5 rounded-2xl shadow-lg mb-4">
+                            <p class="text-xs text-gray-400 uppercase tracking-wide">Total Expenses</p>
+                            <div class="flex items-baseline mt-1">
+                                <span class="text-2xl font-bold">¥</span>
+                                <span class="text-4xl font-bold ml-1">{{ totalExpenseJPY.toLocaleString() }}</span>
+                            </div>
+                            <p class="text-sm text-gray-400 mt-1">≈ NT$ {{ totalExpenseTWD.toLocaleString() }}</p>
+                        </div>
+
+                        <div v-for="(item, index) in expenseList" :key="index" class="bg-white p-3 rounded-xl border border-gray-100 flex justify-between items-center">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
+                                    <span class="text-xs font-bold">{{ item.category.substring(0,1) }}</span>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-gray-800 text-sm">{{ item.name }}</p>
+                                    <p class="text-xs text-gray-500">{{ item.date }} • {{ item.method }}</p>
+                                </div>
+                            </div>
+                            <p class="font-bold text-gray-800">-¥{{ item.amount.toLocaleString() }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button @click="openModal" class="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 rounded-full text-white shadow-2xl flex items-center justify-center hover:bg-blue-700 transition-transform active:scale-95 z-30">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            </button>
+
+            <div v-if="isModalOpen" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+                <div @click.stop class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-fade-in-up">
+                    <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h3 class="font-bold text-lg text-gray-800">新增行程</h3>
+                        <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
                     </div>
                     
-                    <div class="pt-4 flex justify-end space-x-3">
-                        <button type="button" @click="closeModal" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
-                            取消
+                    <form @submit.prevent="saveItinerary" class="p-5 space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">日期</label>
+                            <input type="date" :value="selectedDate" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">時間</label>
+                            <input type="time" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">名稱</label>
+                            <input type="text" placeholder="輸入行程名稱..." class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-blue-700 transition-colors mt-4">
+                            確認新增
                         </button>
-                        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-md hover:bg-blue-700 transition-colors">
-                            儲存行程
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     `,
