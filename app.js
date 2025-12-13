@@ -1,8 +1,8 @@
 const { createApp, ref, computed } = Vue;
 
-// --- 範例行程數據 (已擴展至六天) ---
+// --- 範例行程數據 (已擴展至六天，後三天為空白框架) ---
 const initialTripData = {
-    // 每日行程 (Day 1: 2026-02-04)
+    // 每日行程的數據。如果沒有行程，陣列則為空 [].
     dailyItineraries: {
         '2026-02-04': [
             { id: 1, type: 'flight', name: 'TPE 第一航廈起飛', time: '12:00', location: '桃園國際機場(TPE) - 名古屋中部國際機場(NGO)', details: { note: '表定: Choooo (國泰)' } },
@@ -21,22 +21,12 @@ const initialTripData = {
              { id: 8, type: 'meal', name: '高山清酒廠巡禮', time: '15:00', location: '原田酒造場', details: { note: '試飲活動，注意時間不要耽誤' } },
              { id: 9, type: 'meal', name: '晚餐：味の与平', time: '18:30', location: '岐阜県高山市上三之町105', details: { note: '本店官網菜單確認' } },
         ],
-        // Day 4: 2026-02-07 (新增)
-        '2026-02-07': [
-            { id: 10, type: 'transport', name: '移動至名古屋', time: '10:00', location: '高山濃飛巴士站', details: { note: '高山 -> 名古屋 (高速巴士)' } },
-            { id: 11, type: 'attraction', name: '名古屋城', time: '14:00', location: '愛知県名古屋市中区本丸１−１', details: { note: '下午參觀，可能需要排隊' } },
-        ],
-        // Day 5: 2026-02-08 (新增)
-        '2026-02-08': [
-            { id: 12, type: 'attraction', name: '熱田神宮', time: '9:00', location: '名古屋市熱田區神宮１丁目１−１', details: { note: '日本最古老的神社之一' } },
-            { id: 13, type: 'meal', name: '午餐：蓬萊軒鰻魚飯', time: '12:30', location: '熱田神宮附近', details: { note: '需排隊名店' } },
-            { id: 14, type: 'attraction', name: '大須觀音商店街', time: '15:00', location: '名古屋市中区大須２丁目２１−４７', details: { note: '逛街購物' } },
-        ],
-        // Day 6: 2026-02-09 (新增)
-        '2026-02-09': [
-            { id: 15, type: 'transport', name: '前往中部機場', time: '13:00', location: '名鐵名古屋站', details: { note: '搭乘名鐵μ-SKY特急列車' } },
-            { id: 16, type: 'flight', name: 'NGO 中部國際機場回程', time: '16:00', location: '名古屋中部國際機場(NGO) - 桃園國際機場(TPE)', details: { note: '表定: Choooo (國泰)' } },
-        ],
+        // **** Day 4: 2026-02-07 (空白行程，等待您填寫) ****
+        '2026-02-07': [], 
+        // **** Day 5: 2026-02-08 (空白行程，等待您填寫) ****
+        '2026-02-08': [],
+        // **** Day 6: 2026-02-09 (空白行程，等待您填寫) ****
+        '2026-02-09': [],
     },
     // 住宿資訊
     accommodations: [
@@ -45,13 +35,13 @@ const initialTripData = {
         { date: '2/6', name: 'ホテルアマネク飛騨高山', address: '岐阜県高山市花里町４‐７５‐３', tel: '0577-36-2222' },
         { date: '2/7 ~ 2/8', name: 'ベストウェスタンプラス名古屋栄', address: '愛知県名古屋市中区栄４丁目６－１', tel: '052-262-6000' },
     ],
-    // 購物清單
+    // 購物清單 (其餘內容不變...)
     shoppingList: [
         { name: 'Moflin (シルバー)', location: 'ビックカメラ名古屋駅西店', price: 39800, acquired: false },
         { name: '清酒', location: '高山老街', price: null, acquired: false },
         { name: '名古屋限定蝦餅', location: '中部國際機場', price: null, acquired: false },
     ],
-    // 花費記錄
+    // 花費記錄 (其餘內容不變...)
     expenses: [
         { category: '交通', name: '新特麗亞套票', date: '2026-02-04', amount: 5500, method: '現金', note: '機場-高山' },
         { category: '住宿', name: 'ホテルアマネク飛騨高山 (2晚)', date: '2026-02-04', amount: 30000, method: '信用卡', note: '總住宿費的一部分' },
@@ -60,22 +50,22 @@ const initialTripData = {
     // 當前匯率 (例如：1 JPY = 0.22 TWD)
     exchangeRate: 0.22, 
 };
+
 // 取得每日的日期清單並排序
 const tripDates = Object.keys(initialTripData.dailyItineraries).sort();
 
 
-// --- Vue App 主體邏輯 ---
+// --- Vue App 主體邏輯 (與上一個版本相同) ---
 const App = {
     setup() {
-        const activeTab = ref('itinerary'); // 當前選中的標籤: itinerary, accommodation, shopping, expense
-        const selectedDate = ref(tripDates[0]); // 當前選中的日期，預設為第一天
+        const activeTab = ref('itinerary');
+        const selectedDate = ref(tripDates[0]);
 
         const tripData = ref(initialTripData);
         
         // 計算當前日期的天氣資訊 (簡化範例)
         const weatherInfo = computed(() => {
             const date = selectedDate.value;
-            // 這是簡化的模擬數據，實際應用需串接天氣 API
             if (date === '2026-02-04') return { tempMax: 1, tempMin: -5, condition: '雪', location: '高山/名古屋', note: '體感: -3°C' };
             if (date === '2026-02-05') return { tempMax: 0, tempMin: -6, condition: '大雪', location: '新穗高', note: '體感: -5°C' };
             if (date === '2026-02-06') return { tempMax: 2, tempMin: -4, condition: '晴朗', location: '高山', note: '體感: -2°C' };
@@ -156,13 +146,10 @@ const App = {
             selectTab,
             selectDate,
             toggleAcquired,
-            // 稍後可用來新增功能
-            // createNewItem,
-            // editItem,
-            // deleteItem
         };
     },
 
+    // --- Template (與上一個版本相同) ---
     template: `
         <div class="relative overflow-hidden">
             <img src="gassho_winter_banner.jpg" alt="合掌村冬日雪景" class="w-full h-full object-cover">
