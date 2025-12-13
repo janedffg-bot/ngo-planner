@@ -1,1 +1,40 @@
-
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>☃️ 日系極簡 - 北海道冰雪之旅</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // 根據合掌村冬季圖片底色自訂冰雪藍
+                        'ice-blue-light': '#F0F8FF', // 頁面主要背景色
+                        'ice-blue-dark': '#E0FFFF', // 卡片等次要背景色
+                        'accent-blue': '#4A90E2', // 主色調：藍色
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script async defer src="YOUR_GOOGLE_MAPS_API_KEY"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        /* 自定義圓弧效果的遮罩 */
+        .header-mask {
+            height: 50px; /* 圓弧高度 */
+            border-top-left-radius: 50vw;
+            border-top-right-radius: 50vw;
+            position: relative;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-ice-blue-light">
+    <div id="app" class="max-w-md mx-auto bg-white min-h-screen shadow-lg">
+        </div>
+    <script src="app.js"></script> </body>
+</html>
