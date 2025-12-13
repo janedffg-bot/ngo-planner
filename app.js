@@ -1,6 +1,6 @@
 const { createApp, ref, computed } = Vue;
 
-// --- 範例行程數據 (維持不變) ---
+// --- 範例行程數據 (維持六天，後三天為空白框架) ---
 const initialTripData = {
     dailyItineraries: {
         '2026-02-04': [
@@ -54,6 +54,7 @@ const App = {
 
         const tripData = ref(initialTripData);
         
+        // 計算當前日期的天氣資訊
         const weatherInfo = computed(() => {
             const date = selectedDate.value;
             if (date === '2026-02-04') return { tempMax: 1, tempMin: -5, condition: '雪', location: '高山/名古屋', note: '體感: -3°C' };
@@ -65,16 +66,21 @@ const App = {
             return { tempMax: '?', tempMin: '?', condition: '未知', location: '未知', note: '' };
         });
 
+        // 修正後的 dateOptions 邏輯：將 1, 2, 3 改為 02/04 格式
         const dateOptions = computed(() => {
             return tripDates.map((date, index) => {
                 const dayIndex = index + 1;
                 const dayOfWeekIndex = new Date(date).getDay();
                 const dayOfWeek = ['日', '一', '二', '三', '四', '五', '六'][dayOfWeekIndex];
                 
+                // 將 "2026-02-04" 轉換為 "02/04"
+                const parts = date.split('-'); // ['2026', '02', '04']
+                const displayDate = `${parts[1]}/${parts[2]}`;
+
                 return {
                     day: dayIndex,
                     date: date,
-                    display: `${dayIndex}`, 
+                    display: displayDate, // 這裡改為日期字串
                     dayOfWeek: dayOfWeek 
                 };
             });
@@ -153,7 +159,7 @@ const App = {
     template: `
         <div class="min-h-screen bg-gray-100">
             
-            <div class="relative h-[280px] w-full">
+            <div class="relative h-[250px] w-full">
                 <img src="gassho_winter_banner.jpg" alt="合掌村冬日雪景" class="w-full h-full object-cover">
                 <div class="absolute inset-0 bg-gray-900 bg-opacity-30"></div>
                 <h1 class="absolute top-8 left-4 text-white text-2xl font-bold z-10">合掌村冬日雪景</h1>
@@ -189,7 +195,7 @@ const App = {
                                  :class="['flex-shrink-0 w-[50px] h-14 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-200 border',
                                           selectedDate === option.date ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50']">
                                 <span class="text-[10px]">週{{ option.dayOfWeek }}</span>
-                                <span class="text-lg font-bold leading-none">{{ option.display }}</span>
+                                <span class="text-sm font-bold leading-none">{{ option.display }}</span>
                             </div>
                         </div>
 
