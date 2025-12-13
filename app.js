@@ -96,6 +96,7 @@ const App = {
         // 點擊行程卡片開啟 Google Maps 導航
         const navigateTo = (location) => {
             if (location) {
+                // 此處使用 Google Maps 搜尋 URL，若要精確導航需啟用 API
                 const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
                 window.open(mapUrl, '_blank');
             } else {
@@ -126,7 +127,7 @@ const App = {
     template: `
         <div class="relative">
             <div class="h-[250px] overflow-hidden">
-                <img src="YOUR_GAHHO_VILLAGE_WINTER_IMAGE_URL" 
+                <img src="http://googleusercontent.com/image_generation_content/0" 
                      alt="合掌村冬日雪景" 
                      class="w-full h-full object-cover">
             </div>
