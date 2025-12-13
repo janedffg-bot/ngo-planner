@@ -145,14 +145,14 @@ const App = {
     },
 
     template: `
-        <div class="relative overflow-hidden">
+        <div class="relative overflow-hidden mb-[-50px]">
             <img src="gassho_winter_banner.jpg" alt="合掌村冬日雪景" class="w-full h-full object-cover">
             
             <div class="absolute inset-0 bg-gray-900 bg-opacity-30"></div>
 
             <h1 class="absolute top-8 left-4 text-white text-2xl font-bold">合掌村冬日雪景</h1>
 
-            <div class="absolute bottom-[-50px] left-0 right-0 h-28 bg-white rounded-t-3xl shadow-lg pt-4 px-4 flex justify-between z-10">
+            <div class="absolute bottom-0 left-0 right-0 h-28 bg-white rounded-t-3xl shadow-lg pt-4 px-4 flex justify-between z-10">
                 <button @click="selectTab('itinerary')" :class="['flex-1 p-2 flex flex-col items-center', activeTab === 'itinerary' ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-blue-600']">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                     <span>行程</span>
@@ -171,14 +171,13 @@ const App = {
                 </button>
             </div>
         </div>
-
-        <main class="pt-28 p-4 bg-gray-100 min-h-[calc(100vh-250px)]">
+        <main class="pt-4 p-4 bg-gray-100 min-h-[calc(100vh-250px)]">
 
             <div v-if="activeTab === 'itinerary'" class="flex flex-col space-y-3">
                 
-                <div class="flex overflow-x-auto space-x-2 mb-4 scrollbar-hide">
+                <div class="flex overflow-x-auto space-x-1.5 mb-4 scrollbar-hide">
                     <div v-for="option in dateOptions" :key="option.date" @click="selectDate(option.date)"
-                         :class="['flex-shrink-0 w-[50px] h-16 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-200',
+                         :class="['flex-shrink-0 w-[48px] h-16 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-200',
                                   selectedDate === option.date ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-gray-50']">
                         <span class="text-xs">週{{ option.dayOfWeek }}</span>
                         <span class="text-xl font-bold">{{ option.display }}</span>
@@ -291,7 +290,6 @@ const App = {
                 +
             </button>
         </main>
-    </div>
     `,
 };
 
