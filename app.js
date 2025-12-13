@@ -160,7 +160,7 @@ const App = {
         <div class="min-h-screen bg-gray-100">
             
             <div class="relative h-[250px] w-full">
-                <img src="gassho_winter_banner.jpg" alt="名古屋六日遊" class="w-full h-full object-cover">
+                <img src="gassho_winter_banner.jpg" alt="名古屋六日遊橫幅" class="w-full h-full object-cover">
                 <div class="absolute inset-0 bg-gray-900 bg-opacity-30"></div>
                 <h1 class="absolute top-8 left-4 text-white text-2xl font-bold z-10">名古屋六日遊</h1>
             </div>
@@ -307,36 +307,4 @@ const App = {
             </button>
 
             <div v-if="isModalOpen" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                <div @click.stop class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-fade-in-up">
-                    <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                        <h3 class="font-bold text-lg text-gray-800">新增行程</h3>
-                        <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                        </button>
-                    </div>
-                    
-                    <form @submit.prevent="saveItinerary" class="p-5 space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">日期</label>
-                            <input type="date" :value="selectedDate" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">時間</label>
-                            <input type="time" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">名稱</label>
-                            <input type="text" placeholder="輸入行程名稱..." class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        
-                        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-blue-700 transition-colors mt-4">
-                            確認新增
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    `,
-};
-
-createApp(App).mount('#app');
+                <div @click.stop class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-fade
