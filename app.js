@@ -127,7 +127,7 @@ const App = {
     template: `
         <div class="relative">
             <div class="h-[250px] overflow-hidden">
-                <img src="http://googleusercontent.com/image_generation_content/0" 
+                <img src="gassho_winter_banner.jpg" 
                      alt="合掌村冬日雪景" 
                      class="w-full h-full object-cover">
             </div>
