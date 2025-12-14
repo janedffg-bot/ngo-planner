@@ -7,7 +7,6 @@ const STORAGE_KEY = 'nagoyaTripPlanner';
 const initialTripData = {
     dailyItineraries: {
         '2026-02-04': [
-            // 修正 type: 'flight' 的圖標和背景樣式
             { id: 1, type: 'flight', name: 'TPE 第一航廈起飛', time: '12:00', location: '桃園國際機場(TPE) - 名古屋中部國際機場(NGO)', details: { note: '表定: Choooo (國泰)' } },
             { id: 2, type: 'transport', name: '購買新特麗亞套票', time: '15:35', location: '中部國際機場國內航廈2樓', details: { note: '機場-岐阜(鐵路)-高山(巴士)' } },
             { id: 3, type: 'meal', name: '晚餐：自訂', time: '19:00', location: '高山市區', details: { note: '飛驒牛或蕎麥麵' } },
@@ -77,19 +76,18 @@ const App = {
         const selectedDate = ref(validDates[0] || tripDates[0]); // 使用最新的日期清單
 
         const isModalOpen = ref(false); 
-        const isExportModalOpen = ref(false); // 【新增】匯出 Modal 狀態
-        const isImportModalOpen = ref(false); // 【新增】匯入 Modal 狀態
-        const exportData = computed(() => JSON.stringify(tripData.value, null, 2)); // 【新增】格式化匯出資料
-        const importDataInput = ref(''); // 【新增】匯入資料的輸入欄位
+        const isExportModalOpen = ref(false); 
+        const isImportModalOpen = ref(false); 
+        const exportData = computed(() => JSON.stringify(tripData.value, null, 2)); 
+        const importDataInput = ref(''); 
 
         // 用於處理新增或編輯的表單資料
         const modalForm = ref({
-            id: null, // 項目ID, null代表新增
+            id: null, 
             name: '',
             time: '',
             location: '',
             type: 'attraction',
-            // 【新增】備註欄位
             note: '' 
         });
 
@@ -100,7 +98,7 @@ const App = {
             } catch (e) {
                 console.error("無法儲存資料到 LocalStorage:", e);
             }
-        }, { deep: true }); // deep: true 確保陣列內部的對象變化也能觸發儲存
+        }, { deep: true }); 
 
         // 生成 Google Maps 連結
         const getMapUrl = (location) => {
@@ -454,14 +452,14 @@ const App = {
                                                 <svg class="w-3 h-3 mr-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>
                                                 {{ item.location }} (地圖)
                                             </a>
-                                            <div v-if="item.details && item.details.note && item.details.note.trim() !== '(已編輯 - 已儲存)'" 
-                                                 :class="['mt-2 p-2 rounded-lg border flex items-start space-x-1.5',
+                                            <div v-if="item.details && item.details.note && item.details.note.trim()" 
+                                                 :class="['mt-1 text-xs leading-relaxed flex items-start space-x-1.5',
                                                           item.type === 'flight' 
-                                                          ? 'bg-blue-800 border-blue-700 text-white' // 航班：深藍色背景，白色文字
-                                                          : 'bg-yellow-50 border-yellow-200 text-gray-700']"> <svg v-if="item.type === 'flight'" class="w-3.5 h-3.5 mt-0.5 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                                 <svg v-else class="w-3.5 h-3.5 mt-0.5 text-yellow-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                          ? 'text-blue-100 font-medium' // 航班：淺藍色文字
+                                                          : 'text-gray-500']"> <svg v-if="item.type === 'flight'" class="w-3 h-3 mt-0.5 text-blue-100 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                 <svg v-else class="w-3 h-3 mt-0.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
 
-                                                 <p :class="['text-xs leading-relaxed', item.type === 'flight' ? 'text-white' : 'text-gray-700']">{{ item.details.note }}</p>
+                                                 <span>{{ item.details.note }}</span>
                                             </div>
                                             </div>
                                     </div>
