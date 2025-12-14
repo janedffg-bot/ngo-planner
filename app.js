@@ -51,12 +51,14 @@ const App = {
         const activeTab = ref('itinerary');
         const selectedDate = ref(tripDates[0]);
         const isModalOpen = ref(false); 
-        // 【新增】用於儲存新增行程的表單資料 (偽裝)
-        const newItineraryItem = ref({
-            name: '新增午餐',
-            time: '13:00',
-            location: '新地點',
-            type: 'meal' // 預設類型
+        
+        // 【新增/修改】用於處理新增或編輯的表單資料
+        const modalForm = ref({
+            id: null, // 項目ID, null代表新增
+            name: '',
+            time: '',
+            location: '',
+            type: 'attraction' 
         });
 
         const tripData = ref(initialTripData);
@@ -136,46 +138,89 @@ const App = {
             item.acquired = !item.acquired;
         };
 
-        const openModal = () => {
-            isModalOpen.value = true;
-            activeTab.value = 'itinerary'; // 確保打開時在行程頁
+        // 【新增功能】重設表單狀態
+        const resetModalForm = () => {
+             modalForm.value = {
+                id: null,
+                name: '新增項目',
+                time: '12:30',
+                location: '未知地點',
+                type: 'attraction'
+            };
         };
+
+        // 【修改】打開 Modal，用於新增
+        const openModal = () => {
+            if (activeTab.value !== 'itinerary') {
+                alert("目前僅支援新增行程項目。");
+                return;
+            }
+            resetModalForm();
+            isModalOpen.value = true;
+        };
+
+        // 【新增功能】打開 Modal，用於編輯
+        const openEditModal = (item) => {
+            // 將要編輯的項目資料複製到表單狀態中
+            modalForm.value = {
+                id: item.id,
+                name: item.name,
+                time: item.time,
+                location: item.location,
+                type: item.type 
+            };
+            isModalOpen.value = true;
+        };
+
 
         const closeModal = () => {
             isModalOpen.value = false;
         };
 
-        // 【新增】實現行程新增的邏輯
+        // 【修改】新增/編輯行程項目
         const saveItinerary = () => {
-            if (activeTab.value === 'itinerary') {
+            if (modalForm.value.id === null) {
+                // 執行新增操作
                 const maxId = tripData.value.dailyItineraries[selectedDate.value].reduce((max, item) => Math.max(max, item.id), 0);
-
                 const newItem = {
                     id: maxId + 1,
-                    type: newItineraryItem.value.type,
-                    name: newItineraryItem.value.name,
-                    time: newItineraryItem.value.time,
-                    location: newItineraryItem.value.location,
+                    type: modalForm.value.type,
+                    name: modalForm.value.name,
+                    time: modalFormForm.value.time,
+                    location: modalForm.value.location,
                     details: { note: ' (新增項目)' }
                 };
 
                 // 將新項目推送到當前日期的行程陣列中
                 tripData.value.dailyItineraries[selectedDate.value].push(newItem);
-                
-                // 重設表單狀態供下次使用
-                 newItineraryItem.value = {
-                    name: '新增項目',
-                    time: '12:30',
-                    location: '未知地點',
-                    type: 'attraction'
-                };
-                
-                closeModal();
                 alert(`已將「${newItem.name}」加入 ${selectedDate.value} 的行程。`);
 
             } else {
-                // 針對其他 Tab 仍維持原本的提示
-                 alert("目前僅能新增行程項目。");
+                // 執行編輯操作
+                const index = tripData.value.dailyItineraries[selectedDate.value].findIndex(item => item.id === modalForm.value.id);
+                if (index !== -1) {
+                    const itemToUpdate = tripData.value.dailyItineraries[selectedDate.value][index];
+                    itemToUpdate.name = modalForm.value.name;
+                    itemToUpdate.time = modalForm.value.time;
+                    itemToUpdate.location = modalForm.value.location;
+                    itemToUpdate.type = modalForm.value.type;
+                    itemToUpdate.details.note = '(已編輯)';
+                    alert(`已更新行程項目「${itemToUpdate.name}」。`);
+                }
+            }
+            
+            closeModal();
+        };
+
+        // 【新增功能】刪除行程項目
+        const deleteItineraryItem = (itemToDelete) => {
+            if (confirm(`確定要刪除「${itemToDelete.name}」這個行程項目嗎？`)) {
+                const itinerary = tripData.value.dailyItineraries[selectedDate.value];
+                const index = itinerary.findIndex(item => item.id === itemToDelete.id);
+                if (index !== -1) {
+                    itinerary.splice(index, 1); // 從陣列中移除
+                    alert(`「${itemToDelete.name}」已刪除。`);
+                }
             }
         };
 
@@ -192,12 +237,14 @@ const App = {
             totalExpenseJPY,
             totalExpenseTWD,
             isModalOpen,
-            newItineraryItem, // 傳遞給 Modal 使用
+            modalForm, // 傳遞給 Modal 使用
 
             selectTab,
             selectDate,
             toggleAcquired,
             openModal,
+            openEditModal, // 新增
+            deleteItineraryItem, // 新增
             closeModal,
             saveItinerary,
         };
@@ -267,7 +314,7 @@ const App = {
 
                         <div v-if="currentItinerary.length" class="space-y-4">
                             <template v-for="(item, index) in currentItinerary" :key="item.id">
-                                <div :class="['p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start', item.type === 'flight' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-800', index > 9 ? 'border-dashed border-red-400' : '']">
+                                <div :class="['p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start relative', item.type === 'flight' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-800']">
                                     <div class="flex items-start space-x-3 overflow-hidden">
                                         <div class="mt-1 flex-shrink-0">
                                             <svg v-if="item.type === 'flight'" class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
@@ -283,8 +330,19 @@ const App = {
                                         </div>
                                     </div>
 
-                                    <div :class="['text-sm font-mono flex-shrink-0 ml-2', item.type === 'flight' ? 'text-white' : 'text-gray-900 font-semibold']">
-                                        {{ item.time }}
+                                    <div class="flex flex-col items-end flex-shrink-0 ml-2">
+                                        <div :class="['text-sm font-mono', item.type === 'flight' ? 'text-white' : 'text-gray-900 font-semibold']">
+                                            {{ item.time }}
+                                        </div>
+                                        
+                                        <div v-if="item.type !== 'flight'" class="flex space-x-2 mt-2">
+                                            <button @click.stop="openEditModal(item)" class="text-gray-400 hover:text-blue-600 transition-colors p-1 rounded-full bg-gray-50">
+                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                            </button>
+                                            <button @click.stop="deleteItineraryItem(item)" class="text-gray-400 hover:text-red-600 transition-colors p-1 rounded-full bg-gray-50">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -356,34 +414,35 @@ const App = {
             <div v-if="isModalOpen" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
                 <div @click.stop class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-fade">
                     <div class="p-6">
-                        <h2 class="text-xl font-bold text-gray-800 mb-4">新增行程項目 ({{ dateOptions.find(d => d.date === selectedDate).display }})</h2>
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">{{ modalForm.id === null ? '新增行程項目' : '編輯行程項目' }} ({{ dateOptions.find(d => d.date === selectedDate).display }})</h2>
                         
                         <div class="space-y-3">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">項目名稱</label>
-                                <input type="text" v-model="newItineraryItem.name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
+                                <input type="text" v-model="modalForm.name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">時間 (HH:MM)</label>
-                                <input type="text" v-model="newItineraryItem.time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
+                                <input type="text" v-model="modalForm.time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">地點/備註</label>
-                                <input type="text" v-model="newItineraryItem.location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
+                                <input type="text" v-model="modalForm.location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
                             </div>
                              <div>
                                 <label class="block text-sm font-medium text-gray-700">類型</label>
-                                <select v-model="newItineraryItem.type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
+                                <select v-model="modalForm.type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
                                     <option value="attraction">景點</option>
                                     <option value="meal">餐飲</option>
                                     <option value="transport">交通</option>
+                                    <option value="flight">飛航 (不可編輯)</option>
                                 </select>
                             </div>
                         </div>
 
                         <div class="mt-6 flex justify-end space-x-3">
                             <button @click="closeModal" class="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-100">取消</button>
-                            <button @click="saveItinerary" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">儲存</button>
+                            <button @click="saveItinerary" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">{{ modalForm.id === null ? '儲存' : '更新' }}</button>
                         </div>
                     </div>
                 </div>
