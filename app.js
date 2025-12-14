@@ -1,6 +1,9 @@
-const { createApp, ref, computed } = Vue;
+const { createApp, ref, computed, watch } = Vue; // 🚨 記得引入 watch
 
-// --- 範例行程數據 (維持六天，後三天為空白框架) ---
+// 專門用於 LocalStorage 的 Key
+const STORAGE_KEY = 'nagoyaTripPlanner';
+
+// --- 範例行程數據 (作為第一次載入時的預設值) ---
 const initialTripData = {
     dailyItineraries: {
         '2026-02-04': [
@@ -44,15 +47,37 @@ const initialTripData = {
 // 取得每日的日期清單並排序
 const tripDates = Object.keys(initialTripData.dailyItineraries).sort();
 
+// 【新增功能】從 LocalStorage 載入資料，如果沒有則使用預設值
+const loadTripData = () => {
+    try {
+        const storedData = localStorage.getItem(STORAGE_KEY);
+        if (storedData) {
+            // 使用儲存的資料
+            return JSON.parse(storedData);
+        }
+    } catch (e) {
+        console.error("無法從 LocalStorage 載入資料:", e);
+    }
+    // 如果載入失敗或沒有資料，則使用預設值
+    return initialTripData;
+};
+
 
 // --- Vue App 主體邏輯 ---
 const App = {
     setup() {
+        // 【修改】從 LocalStorage 載入資料
+        const tripData = ref(loadTripData()); 
+        
         const activeTab = ref('itinerary');
-        const selectedDate = ref(tripDates[0]);
+        
+        // 確保 selectedDate 是一個有效的日期
+        const validDates = Object.keys(tripData.value.dailyItineraries).sort();
+        const selectedDate = ref(validDates[0] || tripDates[0]); // 使用最新的日期清單
+
         const isModalOpen = ref(false); 
         
-        // 【新增/修改】用於處理新增或編輯的表單資料
+        // 用於處理新增或編輯的表單資料
         const modalForm = ref({
             id: null, // 項目ID, null代表新增
             name: '',
@@ -61,9 +86,17 @@ const App = {
             type: 'attraction' 
         });
 
-        const tripData = ref(initialTripData);
-        
-        // 計算當前日期的天氣資訊
+        // 【新增功能】深度監聽 tripData 變化，並將其儲存到 LocalStorage
+        watch(tripData, (newVal) => {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal));
+            } catch (e) {
+                console.error("無法儲存資料到 LocalStorage:", e);
+            }
+        }, { deep: true }); // deep: true 確保陣列內部的對象變化也能觸發儲存
+
+
+        // 計算當前日期的天氣資訊 (這部分保持不變)
         const weatherInfo = computed(() => {
             const date = selectedDate.value;
             if (date === '2026-02-04') return { tempMax: 1, tempMin: -5, condition: '雪', location: '高山/名古屋', note: '體感: -3°C' };
@@ -75,9 +108,10 @@ const App = {
             return { tempMax: '?', tempMin: '?', condition: '未知', location: '未知', note: '' };
         });
 
-        // 修正後的 dateOptions 邏輯：將 1, 2, 3 改為 02/04 格式
+        // dateOptions 重新計算，確保使用最新的 tripData.dailyItineraries key
         const dateOptions = computed(() => {
-            return tripDates.map((date, index) => {
+             const currentTripDates = Object.keys(tripData.value.dailyItineraries).sort();
+            return currentTripDates.map((date, index) => {
                 const dayIndex = index + 1;
                 const dayOfWeekIndex = new Date(date).getDay();
                 const dayOfWeek = ['日', '一', '二', '三', '四', '五', '六'][dayOfWeekIndex];
@@ -96,10 +130,9 @@ const App = {
         });
 
         const currentItinerary = computed(() => {
-            // 確保行程按時間排序，讓新增的項目能按時間順序插入
+            // 確保行程按時間排序
             const items = tripData.value.dailyItineraries[selectedDate.value] || [];
             return items.sort((a, b) => {
-                // 簡易的時間比較：將 HH:MM 轉為數字進行排序
                 const timeA = parseInt(a.time.replace(':', ''));
                 const timeB = parseInt(b.time.replace(':', ''));
                 return timeA - timeB;
@@ -136,20 +169,21 @@ const App = {
         
         const toggleAcquired = (item) => {
             item.acquired = !item.acquired;
+            // 由於我們 watch 了 tripData，這裡的修改會自動觸發 LocalStorage 儲存
         };
 
-        // 【新增功能】重設表單狀態
+        // 重設表單狀態
         const resetModalForm = () => {
              modalForm.value = {
                 id: null,
-                name: '新增項目',
+                name: '新增午餐/景點/交通',
                 time: '12:30',
-                location: '未知地點',
+                location: '輸入地點或備註',
                 type: 'attraction'
             };
         };
 
-        // 【修改】打開 Modal，用於新增
+        // 打開 Modal，用於新增
         const openModal = () => {
             if (activeTab.value !== 'itinerary') {
                 alert("目前僅支援新增行程項目。");
@@ -159,7 +193,7 @@ const App = {
             isModalOpen.value = true;
         };
 
-        // 【新增功能】打開 Modal，用於編輯
+        // 打開 Modal，用於編輯
         const openEditModal = (item) => {
             // 將要編輯的項目資料複製到表單狀態中
             modalForm.value = {
@@ -177,49 +211,51 @@ const App = {
             isModalOpen.value = false;
         };
 
-        // 【修改】新增/編輯行程項目
+        // 新增/編輯行程項目
         const saveItinerary = () => {
+            const currentItineraryList = tripData.value.dailyItineraries[selectedDate.value];
+
             if (modalForm.value.id === null) {
                 // 執行新增操作
-                const maxId = tripData.value.dailyItineraries[selectedDate.value].reduce((max, item) => Math.max(max, item.id), 0);
+                const maxId = currentItineraryList.reduce((max, item) => Math.max(max, item.id), 0);
                 const newItem = {
                     id: maxId + 1,
                     type: modalForm.value.type,
                     name: modalForm.value.name,
-                    time: modalFormForm.value.time,
+                    time: modalForm.value.time,
                     location: modalForm.value.location,
-                    details: { note: ' (新增項目)' }
+                    details: { note: ' (新增項目 - 已儲存)' }
                 };
 
                 // 將新項目推送到當前日期的行程陣列中
-                tripData.value.dailyItineraries[selectedDate.value].push(newItem);
-                alert(`已將「${newItem.name}」加入 ${selectedDate.value} 的行程。`);
+                currentItineraryList.push(newItem);
+                alert(`已將「${newItem.name}」加入 ${selectedDate.value} 的行程，資料已自動儲存。`);
 
             } else {
                 // 執行編輯操作
-                const index = tripData.value.dailyItineraries[selectedDate.value].findIndex(item => item.id === modalForm.value.id);
+                const index = currentItineraryList.findIndex(item => item.id === modalForm.value.id);
                 if (index !== -1) {
-                    const itemToUpdate = tripData.value.dailyItineraries[selectedDate.value][index];
+                    const itemToUpdate = currentItineraryList[index];
                     itemToUpdate.name = modalForm.value.name;
                     itemToUpdate.time = modalForm.value.time;
                     itemToUpdate.location = modalForm.value.location;
                     itemToUpdate.type = modalForm.value.type;
-                    itemToUpdate.details.note = '(已編輯)';
-                    alert(`已更新行程項目「${itemToUpdate.name}」。`);
+                    itemToUpdate.details.note = '(已編輯 - 已儲存)';
+                    alert(`已更新行程項目「${itemToUpdate.name}」，資料已自動儲存。`);
                 }
             }
             
             closeModal();
         };
 
-        // 【新增功能】刪除行程項目
+        // 刪除行程項目
         const deleteItineraryItem = (itemToDelete) => {
-            if (confirm(`確定要刪除「${itemToDelete.name}」這個行程項目嗎？`)) {
+            if (confirm(`確定要刪除「${itemToDelete.name}」這個行程項目嗎？資料會自動儲存變更。`)) {
                 const itinerary = tripData.value.dailyItineraries[selectedDate.value];
                 const index = itinerary.findIndex(item => item.id === itemToDelete.id);
                 if (index !== -1) {
                     itinerary.splice(index, 1); // 從陣列中移除
-                    alert(`「${itemToDelete.name}」已刪除。`);
+                    alert(`「${itemToDelete.name}」已刪除，資料已自動儲存。`);
                 }
             }
         };
@@ -237,14 +273,14 @@ const App = {
             totalExpenseJPY,
             totalExpenseTWD,
             isModalOpen,
-            modalForm, // 傳遞給 Modal 使用
+            modalForm, 
 
             selectTab,
             selectDate,
             toggleAcquired,
             openModal,
-            openEditModal, // 新增
-            deleteItineraryItem, // 新增
+            openEditModal, 
+            deleteItineraryItem, 
             closeModal,
             saveItinerary,
         };
@@ -435,7 +471,7 @@ const App = {
                                     <option value="attraction">景點</option>
                                     <option value="meal">餐飲</option>
                                     <option value="transport">交通</option>
-                                    <option value="flight">飛航 (不可編輯)</option>
+                                    <option value="flight">飛航</option>
                                 </select>
                             </div>
                         </div>
