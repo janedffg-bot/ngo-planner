@@ -1,9 +1,7 @@
 const { createApp, ref, computed, watch } = Vue; 
 
-// 專門用於 LocalStorage 的 Key
 const STORAGE_KEY = 'nagoyaTripPlanner';
 
-// --- 範例行程數據 (作為第一次載入時的預設值) ---
 const initialTripData = {
     dailyItineraries: {
         '2026-02-04': [
@@ -44,44 +42,32 @@ const initialTripData = {
     exchangeRate: 0.22, 
 };
 
-// 取得每日的日期清單並排序
 const tripDates = Object.keys(initialTripData.dailyItineraries).sort();
 
-// 從 LocalStorage 載入資料，如果沒有則使用預設值
 const loadTripData = () => {
     try {
         const storedData = localStorage.getItem(STORAGE_KEY);
         if (storedData) {
-            // 使用儲存的資料
             return JSON.parse(storedData);
         }
     } catch (e) {
         console.error("無法從 LocalStorage 載入資料:", e);
     }
-    // 如果載入失敗或沒有資料，則使用預設值
     return initialTripData;
 };
 
-
-// --- Vue App 主體邏輯 ---
 const App = {
     setup() {
-        // 從 LocalStorage 載入資料
         const tripData = ref(loadTripData()); 
-        
         const activeTab = ref('itinerary');
-        
-        // 確保 selectedDate 是一個有效的日期
         const validDates = Object.keys(tripData.value.dailyItineraries).sort();
-        const selectedDate = ref(validDates[0] || tripDates[0]); // 使用最新的日期清單
-
+        const selectedDate = ref(validDates[0] || tripDates[0]); 
         const isModalOpen = ref(false); 
         const isExportModalOpen = ref(false); 
         const isImportModalOpen = ref(false); 
         const exportData = computed(() => JSON.stringify(tripData.value, null, 2)); 
         const importDataInput = ref(''); 
 
-        // 用於處理新增或編輯的表單資料
         const modalForm = ref({
             id: null, 
             name: '',
@@ -91,7 +77,6 @@ const App = {
             note: '' 
         });
 
-        // 深度監聽 tripData 變化，並將其儲存到 LocalStorage
         watch(tripData, (newVal) => {
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal));
@@ -100,14 +85,11 @@ const App = {
             }
         }, { deep: true }); 
 
-        // 生成 Google Maps 連結
         const getMapUrl = (location) => {
             const encodedLocation = encodeURIComponent(location);
             return `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
         };
 
-
-        // 計算當前日期的天氣資訊 (這部分保持不變)
         const weatherInfo = computed(() => {
             const date = selectedDate.value;
             if (date === '2026-02-04') return { tempMax: 1, tempMin: -5, condition: '雪', location: '高山/名古屋', note: '體感: -3°C' };
@@ -119,29 +101,24 @@ const App = {
             return { tempMax: '?', tempMin: '?', condition: '未知', location: '未知', note: '' };
         });
 
-        // dateOptions 重新計算，確保使用最新的 tripData.dailyItineraries key
         const dateOptions = computed(() => {
              const currentTripDates = Object.keys(tripData.value.dailyItineraries).sort();
             return currentTripDates.map((date, index) => {
                 const dayIndex = index + 1;
                 const dayOfWeekIndex = new Date(date).getDay();
                 const dayOfWeek = ['日', '一', '二', '三', '四', '五', '六'][dayOfWeekIndex];
-                
-                // 將 "2026-02-04" 轉換為 "02/04"
-                const parts = date.split('-'); // ['2026', '02', '04']
+                const parts = date.split('-'); 
                 const displayDate = `${parts[1]}/${parts[2]}`;
-
                 return {
                     day: dayIndex,
                     date: date,
-                    display: displayDate, // 這裡改為日期字串
+                    display: displayDate, 
                     dayOfWeek: dayOfWeek 
                 };
             });
         });
 
         const currentItinerary = computed(() => {
-            // 確保行程按時間排序
             const items = tripData.value.dailyItineraries[selectedDate.value] || [];
             return items.sort((a, b) => {
                 const timeA = parseInt(a.time.replace(':', ''));
@@ -180,10 +157,8 @@ const App = {
         
         const toggleAcquired = (item) => {
             item.acquired = !item.acquired;
-            // 由於我們 watch 了 tripData，這裡的修改會自動觸發 LocalStorage 儲存
         };
 
-        // 重設表單狀態
         const resetModalForm = () => {
              modalForm.value = {
                 id: null,
@@ -191,11 +166,10 @@ const App = {
                 time: '12:30',
                 location: '輸入地點或備註',
                 type: 'attraction',
-                note: '' // 【重設】備註欄位
+                note: '' 
             };
         };
 
-        // 打開 Modal，用於新增
         const openModal = () => {
             if (activeTab.value !== 'itinerary') {
                 alert("目前僅支援新增行程項目。");
@@ -205,34 +179,28 @@ const App = {
             isModalOpen.value = true;
         };
 
-        // 打開 Modal，用於編輯
         const openEditModal = (item) => {
-            // 將要編輯的項目資料複製到表單狀態中
             modalForm.value = {
                 id: item.id,
                 name: item.name,
                 time: item.time,
                 location: item.location,
                 type: item.type,
-                // 【編輯時載入備註】
                 note: item.details?.note || '' 
             };
             isModalOpen.value = true;
         };
 
-
         const closeModal = () => {
             isModalOpen.value = false;
         };
 
-        // 【新增】匯出操作
         const openExportModal = () => {
             isExportModalOpen.value = true;
         };
         const closeExportModal = () => {
             isExportModalOpen.value = false;
         };
-        // 【新增】複製匯出資料到剪貼簿 (僅作提示)
         const copyExportData = () => {
              navigator.clipboard.writeText(exportData.value).then(() => {
                 alert('匯出資料已複製到剪貼簿。');
@@ -241,9 +209,8 @@ const App = {
             });
         };
 
-        // 【新增】匯入操作
         const openImportModal = () => {
-             importDataInput.value = ''; // 清空上次的輸入
+             importDataInput.value = ''; 
              isImportModalOpen.value = true;
         };
         const closeImportModal = () => {
@@ -252,20 +219,12 @@ const App = {
         const handleImport = () => {
             try {
                 const importedObj = JSON.parse(importDataInput.value);
-                
-                // 簡易驗證結構 (確保至少包含 dailyItineraries)
                 if (!importedObj || !importedObj.dailyItineraries) {
                     throw new Error('資料結構錯誤');
                 }
-
-                // 將新資料儲存到 LocalStorage
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(importedObj));
-
                 alert('資料匯入成功，即將重新整理頁面。');
-                
-                // 重新載入頁面以應用新資料
                 window.location.reload(); 
-
             } catch (error) {
                 alert(`資料匯入失敗！請確認貼上的文字是有效的 JSON 格式。\n錯誤訊息: ${error.message}`);
             } finally {
@@ -273,13 +232,10 @@ const App = {
             }
         };
 
-
-        // 新增/編輯行程項目
         const saveItinerary = () => {
             const currentItineraryList = tripData.value.dailyItineraries[selectedDate.value];
 
             if (modalForm.value.id === null) {
-                // 執行新增操作
                 const maxId = currentItineraryList.reduce((max, item) => Math.max(max, item.id), 0);
                 const newItem = {
                     id: maxId + 1,
@@ -287,16 +243,12 @@ const App = {
                     name: modalForm.value.name,
                     time: modalForm.value.time,
                     location: modalForm.value.location,
-                    // 【儲存備註】
-                    details: { note: modalForm.value.note.trim() || ' (新增項目 - 已儲存)' }
+                    details: { note: modalForm.value.note.trim() }
                 };
-
-                // 將新項目推送到當前日期的行程陣列中
                 currentItineraryList.push(newItem);
                 alert(`已將「${newItem.name}」加入 ${selectedDate.value} 的行程，資料已自動儲存。`);
 
             } else {
-                // 執行編輯操作
                 const index = currentItineraryList.findIndex(item => item.id === modalForm.value.id);
                 if (index !== -1) {
                     const itemToUpdate = currentItineraryList[index];
@@ -304,27 +256,23 @@ const App = {
                     itemToUpdate.time = modalForm.value.time;
                     itemToUpdate.location = modalForm.value.location;
                     itemToUpdate.type = modalForm.value.type;
-                    // 【更新備註】
-                    itemToUpdate.details = { note: modalForm.value.note.trim() || '(已編輯 - 已儲存)' };
+                    itemToUpdate.details = { note: modalForm.value.note.trim() };
                     alert(`已更新行程項目「${itemToUpdate.name}」，資料已自動儲存。`);
                 }
             }
-            
             closeModal();
         };
 
-        // 刪除行程項目
         const deleteItineraryItem = (itemToDelete) => {
             if (confirm(`確定要刪除「${itemToDelete.name}」這個行程項目嗎？資料會自動儲存變更。`)) {
                 const itinerary = tripData.value.dailyItineraries[selectedDate.value];
                 const index = itinerary.findIndex(item => item.id === itemToDelete.id);
                 if (index !== -1) {
-                    itinerary.splice(index, 1); // 從陣列中移除
+                    itinerary.splice(index, 1);
                     alert(`「${itemToDelete.name}」已刪除，資料已自動儲存。`);
                 }
             }
         };
-
 
         return {
             activeTab,
@@ -364,15 +312,12 @@ const App = {
 
     template: `
         <div class="min-h-screen bg-gray-100">
-            
             <div class="relative h-[250px] w-full">
                 <img src="gassho_winter_banner.jpg" alt="名古屋六日遊橫幅" class="w-full h-full object-cover [filter:brightness(1.5)]">
-                
                 <h1 class="absolute top-8 left-4 text-white text-2xl font-bold z-10 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)]">名古屋六日遊</h1>
             </div>
 
             <div class="relative -mt-10 z-20 rounded-t-3xl overflow-hidden bg-gray-100 min-h-[calc(100vh-240px)]">
-                
                 <div class="bg-white px-4 pt-3 pb-2 shadow-sm flex w-full justify-around">
                     <button @click="selectTab('itinerary')" :class="['flex-1 p-2 flex flex-col items-center', activeTab === 'itinerary' ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-blue-600']">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
@@ -393,9 +338,7 @@ const App = {
                 </div>
 
                 <div class="p-4 pb-20">
-                    
                     <div v-if="activeTab === 'itinerary'" class="flex flex-col space-y-4">
-                        
                         <div class="flex overflow-x-auto space-x-2 scrollbar-hide py-1"> 
                             <div v-for="option in dateOptions" :key="option.date" @click="selectDate(option.date)"
                                  :class="['flex-shrink-0 w-[50px] h-14 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-200 border',
@@ -432,6 +375,7 @@ const App = {
                                 [匯入資料]
                             </button>
                         </div>
+
                         <div v-if="currentItinerary.length" class="space-y-4">
                             <template v-for="(item, index) in currentItinerary" :key="item.id">
                                 <div :class="['p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start relative', item.type === 'flight' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-800']">
@@ -452,16 +396,19 @@ const App = {
                                                 <svg class="w-3 h-3 mr-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>
                                                 {{ item.location }} (地圖)
                                             </a>
-                                            <div v-if="item.details && item.details.note && item.details.note.trim()" 
-                                                 :class="['mt-1 text-xs leading-relaxed flex items-start space-x-1.5',
-                                                          item.type === 'flight' 
-                                                          ? 'text-blue-100 font-medium' // 航班：淺藍色文字
-                                                          : 'text-gray-500']"> <svg v-if="item.type === 'flight'" class="w-3 h-3 mt-0.5 text-blue-100 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                                 <svg v-else class="w-3 h-3 mt-0.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
 
-                                                 <span>{{ item.details.note }}</span>
+                                            <div v-if="item.details && item.details.note && item.details.note.trim()" 
+                                                 :class="['mt-2 p-2 rounded-lg border flex items-start space-x-1.5',
+                                                          item.type === 'flight' 
+                                                          ? 'bg-blue-800 border-blue-700 text-white' 
+                                                          : 'bg-yellow-50 border-yellow-200 text-gray-700']">
+                                                 
+                                                 <svg class="w-3.5 h-3.5 mt-0.5 opacity-70 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+
+                                                 <p :class="['text-xs leading-relaxed', item.type === 'flight' ? 'text-white' : 'text-gray-700']">{{ item.details.note }}</p>
                                             </div>
-                                            </div>
+
+                                        </div>
                                     </div>
 
                                     <div class="flex flex-col items-end flex-shrink-0 ml-2">
@@ -469,7 +416,7 @@ const App = {
                                             {{ item.time }}
                                         </div>
                                         
-                                        <div v-if="item.type !== 'flight'" class="flex space-x-2 mt-2">
+                                        <div class="flex space-x-2 mt-2">
                                             <button @click.stop="openEditModal(item)" class="text-gray-400 hover:text-blue-600 transition-colors p-1 rounded-full bg-gray-50">
                                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                             </button>
@@ -563,11 +510,11 @@ const App = {
                                 <label class="block text-sm font-medium text-gray-700">地點</label>
                                 <input type="text" v-model="modalForm.location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
                             </div>
-                             <div>
+                            <div>
                                 <label class="block text-sm font-medium text-gray-700">備註/Note</label>
                                 <textarea v-model="modalForm.note" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border" placeholder="輸入航班資訊、預約號碼、提醒事項等..."></textarea>
                             </div>
-                            <div>
+                             <div>
                                 <label class="block text-sm font-medium text-gray-700">類型</label>
                                 <select v-model="modalForm.type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
                                     <option value="attraction">景點</option>
