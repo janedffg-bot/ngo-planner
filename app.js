@@ -1,4 +1,4 @@
-const { createApp, ref, computed, watch } = Vue; // 🚨 記得引入 watch
+const { createApp, ref, computed, watch } = Vue; 
 
 // 專門用於 LocalStorage 的 Key
 const STORAGE_KEY = 'nagoyaTripPlanner';
@@ -47,7 +47,7 @@ const initialTripData = {
 // 取得每日的日期清單並排序
 const tripDates = Object.keys(initialTripData.dailyItineraries).sort();
 
-// 【新增功能】從 LocalStorage 載入資料，如果沒有則使用預設值
+// 從 LocalStorage 載入資料，如果沒有則使用預設值
 const loadTripData = () => {
     try {
         const storedData = localStorage.getItem(STORAGE_KEY);
@@ -66,7 +66,7 @@ const loadTripData = () => {
 // --- Vue App 主體邏輯 ---
 const App = {
     setup() {
-        // 【修改】從 LocalStorage 載入資料
+        // 從 LocalStorage 載入資料
         const tripData = ref(loadTripData()); 
         
         const activeTab = ref('itinerary');
@@ -86,7 +86,7 @@ const App = {
             type: 'attraction' 
         });
 
-        // 【新增功能】深度監聽 tripData 變化，並將其儲存到 LocalStorage
+        // 深度監聽 tripData 變化，並將其儲存到 LocalStorage
         watch(tripData, (newVal) => {
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal));
@@ -94,6 +94,12 @@ const App = {
                 console.error("無法儲存資料到 LocalStorage:", e);
             }
         }, { deep: true }); // deep: true 確保陣列內部的對象變化也能觸發儲存
+
+        // 【新增函數】生成 Google Maps 連結
+        const getMapUrl = (location) => {
+            const encodedLocation = encodeURIComponent(location);
+            return `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
+        };
 
 
         // 計算當前日期的天氣資訊 (這部分保持不變)
@@ -283,6 +289,7 @@ const App = {
             deleteItineraryItem, 
             closeModal,
             saveItinerary,
+            getMapUrl, // 【新增】傳出 getMapUrl 供模板使用
         };
     },
 
@@ -361,7 +368,12 @@ const App = {
                                         
                                         <div class="flex-1 min-w-0">
                                             <p :class="['font-bold text-base truncate', item.type === 'flight' ? 'text-white' : 'text-gray-800']">{{ item.name }}</p>
-                                            <p v-if="item.location" :class="['text-xs mt-0.5 truncate', item.type === 'flight' ? 'text-blue-100' : 'text-gray-500']">{{ item.location }}</p>
+                                            
+                                            <a v-if="item.location" :href="getMapUrl(item.location)" target="_blank" 
+                                               :class="['text-xs mt-0.5 truncate cursor-pointer transition-colors', 
+                                                        item.type === 'flight' ? 'text-blue-100 hover:text-white' : 'text-blue-600 hover:text-blue-800 underline']">
+                                                {{ item.location }} (地圖)
+                                            </a>
                                             <p v-if="item.details && item.details.note" :class="['text-xs mt-1', item.type === 'flight' ? 'text-blue-200' : 'text-gray-400']">{{ item.details.note }}</p>
                                         </div>
                                     </div>
@@ -393,10 +405,10 @@ const App = {
                         <div v-for="(item, index) in accommodationList" :key="index" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                             <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded mb-2">{{ item.date }}</span>
                             <p class="text-lg font-bold text-gray-800">{{ item.name }}</p>
-                            <div class="flex items-start mt-2 text-gray-500 text-sm">
+                            <a :href="getMapUrl(item.address)" target="_blank" class="flex items-start mt-2 text-gray-500 text-sm hover:text-blue-600 underline cursor-pointer">
                                 <svg class="w-4 h-4 mt-0.5 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243m10.121-5.172a1.998 1.998 0 00-2.828 0L10 14.121m4.121-4.121a1.998 1.998 0 00-2.828 0L10 14.121m0 0l-4.243 4.243m4.243-4.243l4.243-4.243"></path></svg>
-                                <span>{{ item.address }}</span>
-                            </div>
+                                <span>{{ item.address }} (地圖)</span>
+                            </a>
                         </div>
                     </div>
 
@@ -410,7 +422,7 @@ const App = {
                                 </div>
                                 <div>
                                     <p :class="['font-medium', item.acquired ? 'text-gray-400 line-through' : 'text-gray-800']">{{ item.name }}</p>
-                                    <p v-if="item.location" class="text-xs text-gray-500">{{ item.location }}</p>
+                                    <a v-if="item.location" :href="getMapUrl(item.location)" target="_blank" class="text-xs text-gray-500 hover:text-blue-600 underline cursor-pointer">{{ item.location }} (地圖)</a>
                                 </div>
                             </div>
                             <p v-if="item.price" class="text-sm font-bold text-gray-600">¥{{ item.price }}</p>
