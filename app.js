@@ -7,6 +7,7 @@ const STORAGE_KEY = 'nagoyaTripPlanner';
 const initialTripData = {
     dailyItineraries: {
         '2026-02-04': [
+            // 修正 type: 'flight' 的圖標和背景樣式
             { id: 1, type: 'flight', name: 'TPE 第一航廈起飛', time: '12:00', location: '桃園國際機場(TPE) - 名古屋中部國際機場(NGO)', details: { note: '表定: Choooo (國泰)' } },
             { id: 2, type: 'transport', name: '購買新特麗亞套票', time: '15:35', location: '中部國際機場國內航廈2樓', details: { note: '機場-岐阜(鐵路)-高山(巴士)' } },
             { id: 3, type: 'meal', name: '晚餐：自訂', time: '19:00', location: '高山市區', details: { note: '飛驒牛或蕎麥麵' } },
@@ -454,9 +455,13 @@ const App = {
                                                 {{ item.location }} (地圖)
                                             </a>
                                             <div v-if="item.details && item.details.note && item.details.note.trim() !== '(已編輯 - 已儲存)'" 
-                                                 class="mt-2 p-2 bg-yellow-50 rounded-lg border border-yellow-200 flex items-start space-x-1.5">
-                                                 <svg class="w-3.5 h-3.5 mt-0.5 text-yellow-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                                                 <p class="text-xs text-gray-700 leading-relaxed">{{ item.details.note }}</p>
+                                                 :class="['mt-2 p-2 rounded-lg border flex items-start space-x-1.5',
+                                                          item.type === 'flight' 
+                                                          ? 'bg-blue-800 border-blue-700 text-white' // 航班：深藍色背景，白色文字
+                                                          : 'bg-yellow-50 border-yellow-200 text-gray-700']"> <svg v-if="item.type === 'flight'" class="w-3.5 h-3.5 mt-0.5 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                 <svg v-else class="w-3.5 h-3.5 mt-0.5 text-yellow-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+
+                                                 <p :class="['text-xs leading-relaxed', item.type === 'flight' ? 'text-white' : 'text-gray-700']">{{ item.details.note }}</p>
                                             </div>
                                             </div>
                                     </div>
