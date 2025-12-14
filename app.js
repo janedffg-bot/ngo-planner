@@ -87,7 +87,9 @@ const App = {
             name: '',
             time: '',
             location: '',
-            type: 'attraction' 
+            type: 'attraction',
+            // 【新增】備註欄位
+            note: '' 
         });
 
         // 深度監聽 tripData 變化，並將其儲存到 LocalStorage
@@ -189,7 +191,8 @@ const App = {
                 name: '新增午餐/景點/交通',
                 time: '12:30',
                 location: '輸入地點或備註',
-                type: 'attraction'
+                type: 'attraction',
+                note: '' // 【重設】備註欄位
             };
         };
 
@@ -211,7 +214,9 @@ const App = {
                 name: item.name,
                 time: item.time,
                 location: item.location,
-                type: item.type 
+                type: item.type,
+                // 【編輯時載入備註】
+                note: item.details?.note || '' 
             };
             isModalOpen.value = true;
         };
@@ -283,7 +288,8 @@ const App = {
                     name: modalForm.value.name,
                     time: modalForm.value.time,
                     location: modalForm.value.location,
-                    details: { note: ' (新增項目 - 已儲存)' }
+                    // 【儲存備註】
+                    details: { note: modalForm.value.note.trim() || ' (新增項目 - 已儲存)' }
                 };
 
                 // 將新項目推送到當前日期的行程陣列中
@@ -299,7 +305,8 @@ const App = {
                     itemToUpdate.time = modalForm.value.time;
                     itemToUpdate.location = modalForm.value.location;
                     itemToUpdate.type = modalForm.value.type;
-                    itemToUpdate.details.note = '(已編輯 - 已儲存)';
+                    // 【更新備註】
+                    itemToUpdate.details = { note: modalForm.value.note.trim() || '(已編輯 - 已儲存)' };
                     alert(`已更新行程項目「${itemToUpdate.name}」，資料已自動儲存。`);
                 }
             }
@@ -332,10 +339,10 @@ const App = {
             totalExpenseJPY,
             totalExpenseTWD,
             isModalOpen,
-            isExportModalOpen, // 【新增】
-            isImportModalOpen, // 【新增】
-            exportData,        // 【新增】
-            importDataInput,   // 【新增】
+            isExportModalOpen, 
+            isImportModalOpen, 
+            exportData,        
+            importDataInput,   
             modalForm, 
 
             selectTab,
@@ -347,12 +354,12 @@ const App = {
             closeModal,
             saveItinerary,
             getMapUrl,
-            openExportModal, // 【新增】
-            closeExportModal, // 【新增】
-            copyExportData,   // 【新增】
-            openImportModal, // 【新增】
-            closeImportModal, // 【新增】
-            handleImport,     // 【新增】
+            openExportModal, 
+            closeExportModal, 
+            copyExportData,   
+            openImportModal, 
+            closeImportModal, 
+            handleImport,     
         };
     },
 
@@ -441,12 +448,17 @@ const App = {
                                             <p :class="['font-bold text-base truncate', item.type === 'flight' ? 'text-white' : 'text-gray-800']">{{ item.name }}</p>
                                             
                                             <a v-if="item.location" :href="getMapUrl(item.location)" target="_blank" 
-                                               :class="['text-xs mt-0.5 truncate cursor-pointer transition-colors', 
+                                               :class="['text-xs mt-0.5 truncate cursor-pointer transition-colors flex items-center', 
                                                         item.type === 'flight' ? 'text-blue-100 hover:text-white' : 'text-blue-600 hover:text-blue-800 underline']">
+                                                <svg class="w-3 h-3 mr-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>
                                                 {{ item.location }} (地圖)
                                             </a>
-                                            <p v-if="item.details && item.details.note" :class="['text-xs mt-1', item.type === 'flight' ? 'text-blue-200' : 'text-gray-400']">{{ item.details.note }}</p>
-                                        </div>
+                                            <div v-if="item.details && item.details.note && item.details.note.trim() !== '(已編輯 - 已儲存)'" 
+                                                 class="mt-2 p-2 bg-yellow-50 rounded-lg border border-yellow-200 flex items-start space-x-1.5">
+                                                 <svg class="w-3.5 h-3.5 mt-0.5 text-yellow-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                                 <p class="text-xs text-gray-700 leading-relaxed">{{ item.details.note }}</p>
+                                            </div>
+                                            </div>
                                     </div>
 
                                     <div class="flex flex-col items-end flex-shrink-0 ml-2">
@@ -545,10 +557,14 @@ const App = {
                                 <input type="text" v-model="modalForm.time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">地點/備註</label>
+                                <label class="block text-sm font-medium text-gray-700">地點</label>
                                 <input type="text" v-model="modalForm.location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
                             </div>
                              <div>
+                                <label class="block text-sm font-medium text-gray-700">備註/Note</label>
+                                <textarea v-model="modalForm.note" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border" placeholder="輸入航班資訊、預約號碼、提醒事項等..."></textarea>
+                            </div>
+                            <div>
                                 <label class="block text-sm font-medium text-gray-700">類型</label>
                                 <select v-model="modalForm.type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
                                     <option value="attraction">景點</option>
