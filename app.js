@@ -76,7 +76,11 @@ const App = {
         const selectedDate = ref(validDates[0] || tripDates[0]); // 使用最新的日期清單
 
         const isModalOpen = ref(false); 
-        
+        const isExportModalOpen = ref(false); // 【新增】匯出 Modal 狀態
+        const isImportModalOpen = ref(false); // 【新增】匯入 Modal 狀態
+        const exportData = computed(() => JSON.stringify(tripData.value, null, 2)); // 【新增】格式化匯出資料
+        const importDataInput = ref(''); // 【新增】匯入資料的輸入欄位
+
         // 用於處理新增或編輯的表單資料
         const modalForm = ref({
             id: null, // 項目ID, null代表新增
@@ -95,7 +99,7 @@ const App = {
             }
         }, { deep: true }); // deep: true 確保陣列內部的對象變化也能觸發儲存
 
-        // 【新增函數】生成 Google Maps 連結
+        // 生成 Google Maps 連結
         const getMapUrl = (location) => {
             const encodedLocation = encodeURIComponent(location);
             return `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
@@ -217,6 +221,55 @@ const App = {
             isModalOpen.value = false;
         };
 
+        // 【新增】匯出操作
+        const openExportModal = () => {
+            isExportModalOpen.value = true;
+        };
+        const closeExportModal = () => {
+            isExportModalOpen.value = false;
+        };
+        // 【新增】複製匯出資料到剪貼簿 (僅作提示)
+        const copyExportData = () => {
+             navigator.clipboard.writeText(exportData.value).then(() => {
+                alert('匯出資料已複製到剪貼簿。');
+            }).catch(err => {
+                alert('無法自動複製，請手動複製視窗中的文字。');
+            });
+        };
+
+        // 【新增】匯入操作
+        const openImportModal = () => {
+             importDataInput.value = ''; // 清空上次的輸入
+             isImportModalOpen.value = true;
+        };
+        const closeImportModal = () => {
+            isImportModalOpen.value = false;
+        };
+        const handleImport = () => {
+            try {
+                const importedObj = JSON.parse(importDataInput.value);
+                
+                // 簡易驗證結構 (確保至少包含 dailyItineraries)
+                if (!importedObj || !importedObj.dailyItineraries) {
+                    throw new Error('資料結構錯誤');
+                }
+
+                // 將新資料儲存到 LocalStorage
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(importedObj));
+
+                alert('資料匯入成功，即將重新整理頁面。');
+                
+                // 重新載入頁面以應用新資料
+                window.location.reload(); 
+
+            } catch (error) {
+                alert(`資料匯入失敗！請確認貼上的文字是有效的 JSON 格式。\n錯誤訊息: ${error.message}`);
+            } finally {
+                closeImportModal();
+            }
+        };
+
+
         // 新增/編輯行程項目
         const saveItinerary = () => {
             const currentItineraryList = tripData.value.dailyItineraries[selectedDate.value];
@@ -279,6 +332,10 @@ const App = {
             totalExpenseJPY,
             totalExpenseTWD,
             isModalOpen,
+            isExportModalOpen, // 【新增】
+            isImportModalOpen, // 【新增】
+            exportData,        // 【新增】
+            importDataInput,   // 【新增】
             modalForm, 
 
             selectTab,
@@ -289,7 +346,13 @@ const App = {
             deleteItineraryItem, 
             closeModal,
             saveItinerary,
-            getMapUrl, // 【新增】傳出 getMapUrl 供模板使用
+            getMapUrl,
+            openExportModal, // 【新增】
+            closeExportModal, // 【新增】
+            copyExportData,   // 【新增】
+            openImportModal, // 【新增】
+            closeImportModal, // 【新增】
+            handleImport,     // 【新增】
         };
     },
 
@@ -354,7 +417,15 @@ const App = {
                                 </div>
                             </div>
                         </div>
-
+                        
+                        <div class="flex justify-center space-x-4 pt-2">
+                             <button @click="openExportModal" class="px-3 py-1 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">
+                                [匯出資料]
+                            </button>
+                            <button @click="openImportModal" class="px-3 py-1 text-sm font-medium text-green-600 border border-green-600 rounded-lg hover:bg-green-50 transition-colors">
+                                [匯入資料]
+                            </button>
+                        </div>
                         <div v-if="currentItinerary.length" class="space-y-4">
                             <template v-for="(item, index) in currentItinerary" :key="item.id">
                                 <div :class="['p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start relative', item.type === 'flight' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-800']">
@@ -491,6 +562,38 @@ const App = {
                         <div class="mt-6 flex justify-end space-x-3">
                             <button @click="closeModal" class="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-100">取消</button>
                             <button @click="saveItinerary" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">{{ modalForm.id === null ? '儲存' : '更新' }}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="isExportModalOpen" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+                <div @click.stop class="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-fade">
+                    <div class="p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">匯出行程資料 (備份/同步)</h2>
+                        <p class="text-sm text-gray-600 mb-3">請複製下方文字框內**所有內容**，並儲存為備份檔案，或貼到其他裝置進行匯入。</p>
+                        
+                        <textarea :value="exportData" readonly rows="10" class="w-full font-mono text-xs p-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:border-blue-500"></textarea>
+
+                        <div class="mt-4 flex justify-end space-x-3">
+                            <button @click="closeExportModal" class="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-100">關閉</button>
+                            <button @click="copyExportData" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">複製到剪貼簿</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div v-if="isImportModalOpen" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+                <div @click.stop class="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-fade">
+                    <div class="p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">匯入行程資料 (覆蓋現有資料)</h2>
+                        <p class="text-sm text-red-600 mb-3 font-semibold">警告：匯入新資料將會**永久覆蓋**您目前瀏覽器中儲存的所有行程！</p>
+                        
+                        <textarea v-model="importDataInput" rows="10" placeholder="請貼上您備份的 JSON 格式行程資料..." class="w-full font-mono text-xs p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500"></textarea>
+
+                        <div class="mt-4 flex justify-end space-x-3">
+                            <button @click="closeImportModal" class="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-100">取消</button>
+                            <button @click="handleImport" :disabled="!importDataInput.trim()" :class="['px-4 py-2 text-sm font-medium text-white rounded-lg', importDataInput.trim() ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed']">確認匯入並重新整理</button>
                         </div>
                     </div>
                 </div>
